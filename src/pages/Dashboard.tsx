@@ -30,15 +30,15 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const mainCurrency = invoices[0]?.currency || 'IDR';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-        <Button onClick={() => onNavigate('new')}>
-          <Plus className="mr-2 h-4 w-4" /> Buat Invoice
+        <h1 className="text-xl md:text-2xl font-bold text-foreground">Dashboard</h1>
+        <Button size="sm" onClick={() => onNavigate('new')}>
+          <Plus className="mr-1.5 h-4 w-4" /> Buat Invoice
         </Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Invoice</CardTitle>

@@ -139,18 +139,18 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">{existing ? 'Edit Invoice' : 'Buat Invoice Baru'}</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowPreview(true)}>
-            <Printer className="mr-2 h-4 w-4" /> Preview
+    <div className="space-y-4 md:space-y-6 max-w-4xl">
+      <div className="space-y-3">
+        <h1 className="text-xl md:text-2xl font-bold text-foreground">{existing ? 'Edit Invoice' : 'Buat Invoice Baru'}</h1>
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" size="sm" onClick={() => setShowPreview(true)}>
+            <Printer className="mr-1.5 h-4 w-4" /> Preview
           </Button>
-          <Button variant="outline" onClick={handleWhatsApp}>
-            <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp
+          <Button variant="outline" size="sm" onClick={handleWhatsApp}>
+            <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
           </Button>
-          <Button onClick={handleSave}>
-            <Save className="mr-2 h-4 w-4" /> Simpan
+          <Button size="sm" onClick={handleSave}>
+            <Save className="mr-1.5 h-4 w-4" /> Simpan
           </Button>
         </div>
       </div>
