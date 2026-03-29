@@ -46,8 +46,8 @@ export default function Settings() {
   };
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <h1 className="text-2xl font-bold text-foreground">Pengaturan</h1>
+    <div className="space-y-4 md:space-y-6 max-w-3xl">
+      <h1 className="text-xl md:text-2xl font-bold text-foreground">Pengaturan</h1>
 
       {/* Business Profile */}
       <Card>
