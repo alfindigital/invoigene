@@ -57,26 +57,26 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      {/* Top bar */}
-      <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-5 bg-background/80 backdrop-blur-xl">
-        <h1 className="text-lg font-bold tracking-tight text-foreground">
+    <div className="min-h-screen flex flex-col app-bg-pattern">
+      {/* Top bar — dark blue branded */}
+      <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-5 bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-foreground))] shadow-sm">
+        <h1 className="text-lg font-bold tracking-tight">
           {pageTitles[page] || 'Invoice App'}
         </h1>
         <button
           onClick={() => setDarkMode(!darkMode)}
-          className="flex items-center justify-center h-9 w-9 rounded-full bg-secondary text-secondary-foreground hover:bg-accent transition-colors"
+          className="flex items-center justify-center h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-[hsl(var(--nav-foreground))]"
         >
           {darkMode ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
         </button>
       </header>
 
       {/* Content */}
-      <main className="flex-1 px-4 md:px-8 lg:px-12 py-4 pb-24 overflow-auto max-w-5xl mx-auto w-full">
+      <main className="flex-1 px-4 md:px-8 lg:px-12 py-5 pb-24 overflow-auto max-w-5xl mx-auto w-full">
         {renderPage()}
       </main>
 
-      {/* Bottom navigation — always visible */}
+      {/* Bottom navigation */}
       <BottomNav activePage={page} onNavigate={navigate} />
     </div>
   );
