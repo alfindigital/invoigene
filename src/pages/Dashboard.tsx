@@ -66,19 +66,19 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Invoice Terbaru</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl shadow-lg shadow-primary/5 overflow-hidden">
+        <div className="px-5 py-4 border-b border-border/50">
+          <h2 className="text-base font-semibold text-foreground">Invoice Terbaru</h2>
+        </div>
+        <div className="p-4">
           {recent.length === 0 ? (
-            <p className="text-muted-foreground text-sm">Belum ada invoice. Buat invoice pertama Anda!</p>
+            <p className="text-muted-foreground text-sm py-4 text-center">Belum ada invoice. Buat invoice pertama Anda!</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {recent.map(inv => {
                 const { grandTotal } = calcInvoiceTotals(inv);
                 return (
-                  <div key={inv.id} className="flex items-center justify-between rounded-lg border p-3">
+                  <div key={inv.id} className="flex items-center justify-between rounded-xl border border-border/40 bg-background/50 backdrop-blur-sm p-3 hover:bg-accent/30 transition-colors">
                     <div className="space-y-1">
                       <p className="font-medium text-sm">{inv.invoiceNumber}</p>
                       <p className="text-xs text-muted-foreground">{inv.client.name || inv.client.company} · {formatDate(inv.invoiceDate)}</p>
@@ -94,8 +94,8 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
               })}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
