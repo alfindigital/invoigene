@@ -18,6 +18,9 @@ const pageTitles: Record<string, string> = {
 const Index = () => {
   const [page, setPage] = useState('dashboard');
   const [editId, setEditId] = useState<string | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [displayedPage, setDisplayedPage] = useState('dashboard');
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('inv_dark') === 'true';
@@ -31,8 +34,15 @@ const Index = () => {
   }, [darkMode]);
 
   const navigate = (p: string) => {
-    setPage(p);
+    if (p === displayedPage && p !== 'edit') return;
+    setIsTransitioning(true);
     if (p !== 'edit') setEditId(null);
+    clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      setPage(p);
+      setDisplayedPage(p);
+      setIsTransitioning(false);
+    }, 150);
   };
 
   const handleEdit = (id: string) => {
