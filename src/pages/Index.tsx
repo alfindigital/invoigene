@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BottomNav } from '@/components/BottomNav';
 import Dashboard from '@/pages/Dashboard';
 import InvoiceForm from '@/pages/InvoiceForm';
@@ -18,6 +18,9 @@ const pageTitles: Record<string, string> = {
 const Index = () => {
   const [page, setPage] = useState('dashboard');
   const [editId, setEditId] = useState<string | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [displayedPage, setDisplayedPage] = useState('dashboard');
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('inv_dark') === 'true';
@@ -31,8 +34,15 @@ const Index = () => {
   }, [darkMode]);
 
   const navigate = (p: string) => {
-    setPage(p);
+    if (p === displayedPage && p !== 'edit') return;
+    setIsTransitioning(true);
     if (p !== 'edit') setEditId(null);
+    clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      setPage(p);
+      setDisplayedPage(p);
+      setIsTransitioning(false);
+    }, 150);
   };
 
   const handleEdit = (id: string) => {
@@ -77,7 +87,15 @@ const Index = () => {
 
       {/* Content */}
       <main className="flex-1 px-4 md:px-8 lg:px-12 py-5 pb-24 overflow-auto max-w-5xl mx-auto w-full">
-        {renderPage()}
+        <div
+          className={`transition-all duration-200 ease-out ${
+            isTransitioning
+              ? 'opacity-0 translate-y-3 scale-[0.98]'
+              : 'opacity-100 translate-y-0 scale-100'
+          }`}
+        >
+          {renderPage()}
+        </div>
       </main>
 
       {/* Bottom navigation */}
