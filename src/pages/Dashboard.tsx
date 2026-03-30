@@ -39,42 +39,31 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       </div>
 
       <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Invoice</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Pendapatan</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.revenue, mainCurrency)}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Belum Dibayar</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.outstanding, mainCurrency)}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Jatuh Tempo</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-destructive">{stats.overdue}</div>
-          </CardContent>
-        </Card>
+        {[
+          { label: 'Total Invoice', value: stats.total, icon: FileText, color: 'from-primary/80 to-primary' },
+          { label: 'Total Pendapatan', value: formatCurrency(stats.revenue, mainCurrency), icon: DollarSign, color: 'from-emerald-500/80 to-emerald-600' },
+          { label: 'Belum Dibayar', value: formatCurrency(stats.outstanding, mainCurrency), icon: Clock, color: 'from-amber-500/80 to-amber-600' },
+          { label: 'Jatuh Tempo', value: stats.overdue, icon: AlertTriangle, color: 'from-destructive/80 to-destructive', destructive: true },
+        ].map(({ label, value, icon: Icon, color, destructive }) => (
+          <div
+            key={label}
+            className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl p-4 shadow-lg shadow-primary/5 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-0.5"
+          >
+            {/* Gradient accent bar */}
+            <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${color} opacity-80`} />
+            {/* Subtle glow */}
+            <div className={`absolute -top-8 -right-8 h-20 w-20 rounded-full bg-gradient-to-br ${color} opacity-10 blur-2xl group-hover:opacity-20 transition-opacity`} />
+            <div className="relative flex items-center justify-between mb-2">
+              <p className="text-xs font-medium text-muted-foreground">{label}</p>
+              <div className={`flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-br ${color} text-white shadow-md`}>
+                <Icon className="h-4 w-4" />
+              </div>
+            </div>
+            <div className={`relative text-xl md:text-2xl font-bold ${destructive ? 'text-destructive' : 'text-foreground'}`}>
+              {value}
+            </div>
+          </div>
+        ))}
       </div>
 
       <Card>
