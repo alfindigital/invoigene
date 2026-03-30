@@ -5,6 +5,7 @@ import InvoiceForm from '@/pages/InvoiceForm';
 import InvoiceHistory from '@/pages/InvoiceHistory';
 import Settings from '@/pages/Settings';
 import { Sun, Moon } from 'lucide-react';
+import logoImg from '@/assets/logo.png';
 
 const pageTitles: Record<string, string> = {
   dashboard: 'Dashboard',
