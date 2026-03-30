@@ -87,7 +87,15 @@ const Index = () => {
 
       {/* Content */}
       <main className="flex-1 px-4 md:px-8 lg:px-12 py-5 pb-24 overflow-auto max-w-5xl mx-auto w-full">
-        {renderPage()}
+        <div
+          className={`transition-all duration-200 ease-out ${
+            isTransitioning
+              ? 'opacity-0 translate-y-3 scale-[0.98]'
+              : 'opacity-100 translate-y-0 scale-100'
+          }`}
+        >
+          {renderPage()}
+        </div>
       </main>
 
       {/* Bottom navigation */}
