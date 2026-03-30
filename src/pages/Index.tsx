@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BottomNav } from '@/components/BottomNav';
 import Dashboard from '@/pages/Dashboard';
 import InvoiceForm from '@/pages/InvoiceForm';
