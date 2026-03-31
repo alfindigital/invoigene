@@ -179,6 +179,11 @@ export default function InvoiceHistory({ onNavigate, onEdit, onPreview }: Invoic
                               <CheckCircle className="h-4 w-4" />
                             </Button>
                           )}
+                          {onPreview && (
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onPreview(inv.id)} title="Preview & PDF">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(inv.id)}><Edit className="h-4 w-4" /></Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDuplicate(inv)}><Copy className="h-4 w-4" /></Button>
                           <AlertDialog>
