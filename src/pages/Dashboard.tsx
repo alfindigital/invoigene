@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { calcInvoiceTotals, Invoice } from '@/types/invoice';
 import { formatCurrency, formatDate, getStatusLabel, getStatusColor } from '@/lib/formatters';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FileText, Plus, Clock, CheckCircle, AlertTriangle, DollarSign } from 'lucide-react';
+import { FileText, Plus, Clock, AlertTriangle, DollarSign } from 'lucide-react';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { format, subMonths, parseISO } from 'date-fns';
+import { id as idLocale } from 'date-fns/locale';
 
 interface DashboardProps {
   onNavigate: (page: string) => void;
@@ -28,6 +31,34 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
 
   const recent = invoices.slice(0, 5);
   const mainCurrency = invoices[0]?.currency || 'IDR';
+
+  const monthlyData = useMemo(() => {
+    const now = new Date();
+    const months: { month: string; label: string; pendapatan: number; belumBayar: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = subMonths(now, i);
+      months.push({
+        month: format(d, 'yyyy-MM'),
+        label: format(d, 'MMM', { locale: idLocale }),
+        pendapatan: 0,
+        belumBayar: 0,
+      });
+    }
+    invoices.forEach(inv => {
+      const invMonth = inv.invoiceDate.substring(0, 7);
+      const entry = months.find(m => m.month === invMonth);
+      if (!entry) return;
+      const { grandTotal } = calcInvoiceTotals(inv);
+      if (inv.status === 'paid') entry.pendapatan += grandTotal;
+      else if (inv.status === 'sent' || inv.status === 'overdue') entry.belumBayar += grandTotal;
+    });
+    return months;
+  }, [invoices]);
+
+  const chartConfig = {
+    pendapatan: { label: 'Pendapatan', color: 'hsl(var(--primary))' },
+    belumBayar: { label: 'Belum Bayar', color: 'hsl(var(--destructive))' },
+  };
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -64,6 +95,25 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Monthly Revenue Chart */}
+      <div className="rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl shadow-lg shadow-primary/5 overflow-hidden">
+        <div className="px-5 py-4 border-b border-border/50">
+          <h2 className="text-base font-semibold text-foreground">Pendapatan 6 Bulan Terakhir</h2>
+        </div>
+        <div className="p-4">
+          <ChartContainer config={chartConfig} className="aspect-[2/1] w-full">
+            <BarChart data={monthlyData} barGap={4}>
+              <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border/30" />
+              <XAxis dataKey="label" tickLine={false} axisLine={false} className="text-xs fill-muted-foreground" />
+              <YAxis tickLine={false} axisLine={false} className="text-xs fill-muted-foreground" tickFormatter={(v) => v >= 1_000_000 ? `${(v / 1_000_000).toFixed(0)}jt` : v >= 1000 ? `${(v / 1000).toFixed(0)}rb` : String(v)} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Bar dataKey="pendapatan" fill="var(--color-pendapatan)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="belumBayar" fill="var(--color-belumBayar)" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ChartContainer>
+        </div>
       </div>
 
       <div className="rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl shadow-lg shadow-primary/5 overflow-hidden">
