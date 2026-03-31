@@ -97,6 +97,25 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         ))}
       </div>
 
+      {/* Monthly Revenue Chart */}
+      <div className="rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl shadow-lg shadow-primary/5 overflow-hidden">
+        <div className="px-5 py-4 border-b border-border/50">
+          <h2 className="text-base font-semibold text-foreground">Pendapatan 6 Bulan Terakhir</h2>
+        </div>
+        <div className="p-4">
+          <ChartContainer config={chartConfig} className="aspect-[2/1] w-full">
+            <BarChart data={monthlyData} barGap={4}>
+              <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border/30" />
+              <XAxis dataKey="label" tickLine={false} axisLine={false} className="text-xs fill-muted-foreground" />
+              <YAxis tickLine={false} axisLine={false} className="text-xs fill-muted-foreground" tickFormatter={(v) => v >= 1_000_000 ? `${(v / 1_000_000).toFixed(0)}jt` : v >= 1000 ? `${(v / 1000).toFixed(0)}rb` : String(v)} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Bar dataKey="pendapatan" fill="var(--color-pendapatan)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="belumBayar" fill="var(--color-belumBayar)" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ChartContainer>
+        </div>
+      </div>
+
       <div className="rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl shadow-lg shadow-primary/5 overflow-hidden">
         <div className="px-5 py-4 border-b border-border/50">
           <h2 className="text-base font-semibold text-foreground">Invoice Terbaru</h2>
