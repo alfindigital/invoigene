@@ -15,9 +15,10 @@ import { Search, Edit, Copy, Trash2, CheckCircle, Eye, Download } from 'lucide-r
 interface InvoiceHistoryProps {
   onNavigate: (page: string) => void;
   onEdit: (id: string) => void;
+  onPreview?: (id: string) => void;
 }
 
-export default function InvoiceHistory({ onNavigate, onEdit }: InvoiceHistoryProps) {
+export default function InvoiceHistory({ onNavigate, onEdit, onPreview }: InvoiceHistoryProps) {
   const { toast } = useToast();
   const { invoices, deleteInvoice, updateInvoice, addInvoice, settings, setSettings } = useInvoiceStore();
   const [search, setSearch] = useState('');
