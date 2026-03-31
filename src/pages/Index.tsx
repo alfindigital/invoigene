@@ -39,9 +39,9 @@ const Index = () => {
   }, [darkMode]);
 
   const navigate = (p: string) => {
-    if (p === displayedPage && p !== 'edit') return;
+    if (p === displayedPage && p !== 'edit' && p !== 'preview') return;
     setIsTransitioning(true);
-    if (p !== 'edit') setEditId(null);
+    if (p !== 'edit' && p !== 'preview') { setEditId(null); setPreviewId(null); }
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       setPage(p);
