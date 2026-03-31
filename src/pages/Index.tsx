@@ -13,6 +13,7 @@ const pageTitles: Record<string, string> = {
   dashboard: 'Dashboard',
   new: 'Buat Invoice',
   edit: 'Edit Invoice',
+  preview: 'Preview Invoice',
   history: 'Riwayat',
   settings: 'Pengaturan',
 };
