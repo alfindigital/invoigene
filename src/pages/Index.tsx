@@ -69,8 +69,14 @@ const Index = () => {
         return <InvoiceForm onNavigate={navigate} />;
       case 'edit':
         return <InvoiceForm editId={editId} onNavigate={navigate} />;
+      case 'preview':
+        return previewInvoice ? (
+          <InvoicePreview invoice={previewInvoice} profile={profile} onBack={() => navigate('history')} />
+        ) : (
+          <InvoiceHistory onNavigate={navigate} onEdit={handleEdit} onPreview={handlePreview} />
+        );
       case 'history':
-        return <InvoiceHistory onNavigate={navigate} onEdit={handleEdit} />;
+        return <InvoiceHistory onNavigate={navigate} onEdit={handleEdit} onPreview={handlePreview} />;
       case 'settings':
         return <Settings />;
       default:
