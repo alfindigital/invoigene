@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { calcInvoiceTotals, Invoice } from '@/types/invoice';
 import { formatCurrency, formatDate, getStatusLabel, getStatusColor } from '@/lib/formatters';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FileText, Plus, Clock, CheckCircle, AlertTriangle, DollarSign } from 'lucide-react';
+import { FileText, Plus, Clock, AlertTriangle, DollarSign } from 'lucide-react';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { format, subMonths, parseISO } from 'date-fns';
+import { id as idLocale } from 'date-fns/locale';
 
 interface DashboardProps {
   onNavigate: (page: string) => void;
