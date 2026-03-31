@@ -19,8 +19,10 @@ const pageTitles: Record<string, string> = {
 };
 
 const Index = () => {
+  const { invoices, profile } = useInvoiceStore();
   const [page, setPage] = useState('dashboard');
   const [editId, setEditId] = useState<string | null>(null);
+  const [previewId, setPreviewId] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [displayedPage, setDisplayedPage] = useState('dashboard');
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
