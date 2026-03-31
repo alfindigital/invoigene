@@ -52,10 +52,16 @@ const Index = () => {
 
   const handleEdit = (id: string) => {
     setEditId(id);
-    setPage('edit');
+    navigate('edit');
+  };
+
+  const handlePreview = (id: string) => {
+    setPreviewId(id);
+    navigate('preview');
   };
 
   const renderPage = () => {
+    const previewInvoice = previewId ? invoices.find(i => i.id === previewId) : null;
     switch (page) {
       case 'dashboard':
         return <Dashboard onNavigate={navigate} />;
