@@ -32,6 +32,34 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const recent = invoices.slice(0, 5);
   const mainCurrency = invoices[0]?.currency || 'IDR';
 
+  const monthlyData = useMemo(() => {
+    const now = new Date();
+    const months: { month: string; label: string; pendapatan: number; belumBayar: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = subMonths(now, i);
+      months.push({
+        month: format(d, 'yyyy-MM'),
+        label: format(d, 'MMM', { locale: idLocale }),
+        pendapatan: 0,
+        belumBayar: 0,
+      });
+    }
+    invoices.forEach(inv => {
+      const invMonth = inv.invoiceDate.substring(0, 7);
+      const entry = months.find(m => m.month === invMonth);
+      if (!entry) return;
+      const { grandTotal } = calcInvoiceTotals(inv);
+      if (inv.status === 'paid') entry.pendapatan += grandTotal;
+      else if (inv.status === 'sent' || inv.status === 'overdue') entry.belumBayar += grandTotal;
+    });
+    return months;
+  }, [invoices]);
+
+  const chartConfig = {
+    pendapatan: { label: 'Pendapatan', color: 'hsl(var(--primary))' },
+    belumBayar: { label: 'Belum Bayar', color: 'hsl(var(--destructive))' },
+  };
+
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between">
