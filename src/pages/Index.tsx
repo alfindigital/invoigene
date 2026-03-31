@@ -3,7 +3,9 @@ import { BottomNav } from '@/components/BottomNav';
 import Dashboard from '@/pages/Dashboard';
 import InvoiceForm from '@/pages/InvoiceForm';
 import InvoiceHistory from '@/pages/InvoiceHistory';
+import InvoicePreview from '@/components/InvoicePreview';
 import Settings from '@/pages/Settings';
+import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { Sun, Moon } from 'lucide-react';
 import logoImg from '@/assets/logo.png';
 
