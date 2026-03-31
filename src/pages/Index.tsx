@@ -3,7 +3,9 @@ import { BottomNav } from '@/components/BottomNav';
 import Dashboard from '@/pages/Dashboard';
 import InvoiceForm from '@/pages/InvoiceForm';
 import InvoiceHistory from '@/pages/InvoiceHistory';
+import InvoicePreview from '@/components/InvoicePreview';
 import Settings from '@/pages/Settings';
+import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { Sun, Moon } from 'lucide-react';
 import logoImg from '@/assets/logo.png';
 
@@ -11,13 +13,16 @@ const pageTitles: Record<string, string> = {
   dashboard: 'Dashboard',
   new: 'Buat Invoice',
   edit: 'Edit Invoice',
+  preview: 'Preview Invoice',
   history: 'Riwayat',
   settings: 'Pengaturan',
 };
 
 const Index = () => {
+  const { invoices, profile } = useInvoiceStore();
   const [page, setPage] = useState('dashboard');
   const [editId, setEditId] = useState<string | null>(null);
+  const [previewId, setPreviewId] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [displayedPage, setDisplayedPage] = useState('dashboard');
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
@@ -34,9 +39,9 @@ const Index = () => {
   }, [darkMode]);
 
   const navigate = (p: string) => {
-    if (p === displayedPage && p !== 'edit') return;
+    if (p === displayedPage && p !== 'edit' && p !== 'preview') return;
     setIsTransitioning(true);
-    if (p !== 'edit') setEditId(null);
+    if (p !== 'edit' && p !== 'preview') { setEditId(null); setPreviewId(null); }
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       setPage(p);
@@ -47,10 +52,16 @@ const Index = () => {
 
   const handleEdit = (id: string) => {
     setEditId(id);
-    setPage('edit');
+    navigate('edit');
+  };
+
+  const handlePreview = (id: string) => {
+    setPreviewId(id);
+    navigate('preview');
   };
 
   const renderPage = () => {
+    const previewInvoice = previewId ? invoices.find(i => i.id === previewId) : null;
     switch (page) {
       case 'dashboard':
         return <Dashboard onNavigate={navigate} />;
@@ -58,8 +69,14 @@ const Index = () => {
         return <InvoiceForm onNavigate={navigate} />;
       case 'edit':
         return <InvoiceForm editId={editId} onNavigate={navigate} />;
+      case 'preview':
+        return previewInvoice ? (
+          <InvoicePreview invoice={previewInvoice} profile={profile} onBack={() => navigate('history')} />
+        ) : (
+          <InvoiceHistory onNavigate={navigate} onEdit={handleEdit} onPreview={handlePreview} />
+        );
       case 'history':
-        return <InvoiceHistory onNavigate={navigate} onEdit={handleEdit} />;
+        return <InvoiceHistory onNavigate={navigate} onEdit={handleEdit} onPreview={handlePreview} />;
       case 'settings':
         return <Settings />;
       default:

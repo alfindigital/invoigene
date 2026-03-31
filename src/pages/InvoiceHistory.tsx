@@ -10,14 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Edit, Copy, Trash2, CheckCircle } from 'lucide-react';
+import { Search, Edit, Copy, Trash2, CheckCircle, Eye, Download } from 'lucide-react';
 
 interface InvoiceHistoryProps {
   onNavigate: (page: string) => void;
   onEdit: (id: string) => void;
+  onPreview?: (id: string) => void;
 }
 
-export default function InvoiceHistory({ onNavigate, onEdit }: InvoiceHistoryProps) {
+export default function InvoiceHistory({ onNavigate, onEdit, onPreview }: InvoiceHistoryProps) {
   const { toast } = useToast();
   const { invoices, deleteInvoice, updateInvoice, addInvoice, settings, setSettings } = useInvoiceStore();
   const [search, setSearch] = useState('');
@@ -115,6 +116,11 @@ export default function InvoiceHistory({ onNavigate, onEdit }: InvoiceHistoryPro
                           <CheckCircle className="h-4 w-4" />
                         </Button>
                       )}
+                      {onPreview && (
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onPreview(inv.id)} title="Preview & PDF">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(inv.id)}><Edit className="h-4 w-4" /></Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDuplicate(inv)}><Copy className="h-4 w-4" /></Button>
                       <AlertDialog>
@@ -171,6 +177,11 @@ export default function InvoiceHistory({ onNavigate, onEdit }: InvoiceHistoryPro
                           {inv.status !== 'paid' && inv.status !== 'cancelled' && (
                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleMarkPaid(inv)} title="Tandai Lunas">
                               <CheckCircle className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {onPreview && (
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onPreview(inv.id)} title="Preview & PDF">
+                              <Eye className="h-4 w-4" />
                             </Button>
                           )}
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(inv.id)}><Edit className="h-4 w-4" /></Button>
