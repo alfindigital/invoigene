@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Edit, Copy, Trash2, CheckCircle, Eye, Download } from 'lucide-react';
+import { Search, Edit, Copy, Trash2, CheckCircle, Eye, Download, ArrowUpDown } from 'lucide-react';
 
 interface InvoiceHistoryProps {
   onNavigate: (page: string) => void;
@@ -23,13 +23,24 @@ export default function InvoiceHistory({ onNavigate, onEdit, onPreview }: Invoic
   const { invoices, deleteInvoice, updateInvoice, addInvoice, settings, setSettings } = useInvoiceStore();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [sortBy, setSortBy] = useState<'date-desc' | 'date-asc' | 'total-desc' | 'total-asc' | 'status'>('date-desc');
+
+  const statusOrder: Record<string, number> = { overdue: 0, sent: 1, draft: 2, paid: 3, cancelled: 4 };
 
   const filtered = invoices.filter(inv => {
     const matchSearch = !search || inv.invoiceNumber.toLowerCase().includes(search.toLowerCase()) || inv.client.name.toLowerCase().includes(search.toLowerCase()) || inv.client.company.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === 'all' || inv.status === statusFilter;
     return matchSearch && matchStatus;
+  }).sort((a, b) => {
+    switch (sortBy) {
+      case 'date-asc': return new Date(a.invoiceDate).getTime() - new Date(b.invoiceDate).getTime();
+      case 'date-desc': return new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime();
+      case 'total-desc': return calcInvoiceTotals(b).grandTotal - calcInvoiceTotals(a).grandTotal;
+      case 'total-asc': return calcInvoiceTotals(a).grandTotal - calcInvoiceTotals(b).grandTotal;
+      case 'status': return (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9);
+      default: return 0;
+    }
   });
-
   const handleDuplicate = (inv: typeof invoices[0]) => {
     const newNum = settings.invoiceSettings.nextNumber;
     const prefix = settings.invoiceSettings.prefix;
@@ -78,6 +89,19 @@ export default function InvoiceHistory({ onNavigate, onEdit, onPreview }: Invoic
             <SelectItem value="paid">Lunas</SelectItem>
             <SelectItem value="overdue">Jatuh Tempo</SelectItem>
             <SelectItem value="cancelled">Dibatalkan</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <ArrowUpDown className="mr-1.5 h-3.5 w-3.5" />
+            <SelectValue placeholder="Urutkan" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="date-desc">Terbaru</SelectItem>
+            <SelectItem value="date-asc">Terlama</SelectItem>
+            <SelectItem value="total-desc">Total Terbesar</SelectItem>
+            <SelectItem value="total-asc">Total Terkecil</SelectItem>
+            <SelectItem value="status">Status</SelectItem>
           </SelectContent>
         </Select>
       </div>
