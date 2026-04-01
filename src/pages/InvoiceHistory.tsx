@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Edit, Copy, Trash2, CheckCircle, Eye, Download } from 'lucide-react';
+import { Search, Edit, Copy, Trash2, CheckCircle, Eye, Download, ArrowUpDown } from 'lucide-react';
 
 interface InvoiceHistoryProps {
   onNavigate: (page: string) => void;
