@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { calcInvoiceTotals } from '@/types/invoice';
-import { formatCurrency, formatDate, getStatusLabel, getStatusColor } from '@/lib/formatters';
+import { formatCurrency, formatDate, getStatusLabel, getStatusColor, buildWhatsAppInvoiceMessage, openWhatsApp } from '@/lib/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
