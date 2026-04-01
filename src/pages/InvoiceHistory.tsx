@@ -41,13 +41,6 @@ export default function InvoiceHistory({ onNavigate, onEdit, onPreview }: Invoic
       default: return 0;
     }
   });
-
-  const filtered = invoices.filter(inv => {
-    const matchSearch = !search || inv.invoiceNumber.toLowerCase().includes(search.toLowerCase()) || inv.client.name.toLowerCase().includes(search.toLowerCase()) || inv.client.company.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === 'all' || inv.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
-
   const handleDuplicate = (inv: typeof invoices[0]) => {
     const newNum = settings.invoiceSettings.nextNumber;
     const prefix = settings.invoiceSettings.prefix;
