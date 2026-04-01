@@ -16,7 +16,62 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ onNavigate }: DashboardProps) {
-  const { invoices } = useInvoiceStore();
+  const { invoices, addInvoice } = useInvoiceStore();
+  const { toast } = useToast();
+
+  const seedDummyData = () => {
+    const dummyInvoices: Invoice[] = [
+      {
+        id: crypto.randomUUID(), invoiceNumber: 'INV-2026-0001', status: 'paid', currency: 'IDR',
+        invoiceDate: '2026-03-15', dueDate: '2026-04-15', paymentTerms: 'Net 30', notes: 'Terima kasih atas kerjasamanya.',
+        clientId: '1', client: { id: '1', name: 'Budi Santoso', company: 'PT Maju Jaya', address: 'Jl. Sudirman No. 10, Jakarta', phone: '081234567890', email: 'budi@majujaya.com' },
+        lineItems: [
+          { id: crypto.randomUUID(), description: 'Jasa Desain Logo', quantity: 1, unit: 'paket', unitPrice: 5000000, discountType: 'percentage', discountValue: 0 },
+          { id: crypto.randomUUID(), description: 'Revisi Desain', quantity: 3, unit: 'kali', unitPrice: 500000, discountType: 'percentage', discountValue: 0 },
+        ],
+        additionalDiscountType: 'percentage', additionalDiscountValue: 0, taxType: 'ppn11', customTaxRate: 0, shippingCost: 0, paidDate: '2026-03-28', bilingualLabels: false, footerText: '',
+      },
+      {
+        id: crypto.randomUUID(), invoiceNumber: 'INV-2026-0002', status: 'sent', currency: 'IDR',
+        invoiceDate: '2026-03-20', dueDate: '2026-04-20', paymentTerms: 'Net 30', notes: '',
+        clientId: '2', client: { id: '2', name: 'Siti Aminah', company: 'CV Berkah Abadi', address: 'Jl. Gatot Subroto No. 5, Bandung', phone: '087654321098', email: 'siti@berkah.co.id' },
+        lineItems: [
+          { id: crypto.randomUUID(), description: 'Pembuatan Website Company Profile', quantity: 1, unit: 'proyek', unitPrice: 15000000, discountType: 'fixed', discountValue: 1000000 },
+        ],
+        additionalDiscountType: 'percentage', additionalDiscountValue: 0, taxType: 'ppn11', customTaxRate: 0, shippingCost: 0, bilingualLabels: false, footerText: '',
+      },
+      {
+        id: crypto.randomUUID(), invoiceNumber: 'INV-2026-0003', status: 'overdue', currency: 'IDR',
+        invoiceDate: '2026-02-01', dueDate: '2026-03-01', paymentTerms: 'Net 30', notes: 'Mohon segera lakukan pembayaran.',
+        clientId: '3', client: { id: '3', name: 'Agus Wijaya', company: 'PT Teknologi Nusantara', address: 'Jl. Thamrin No. 22, Surabaya', phone: '089876543210', email: 'agus@teknusa.id' },
+        lineItems: [
+          { id: crypto.randomUUID(), description: 'Maintenance Server (Bulanan)', quantity: 3, unit: 'bulan', unitPrice: 3000000, discountType: 'percentage', discountValue: 10 },
+        ],
+        additionalDiscountType: 'percentage', additionalDiscountValue: 5, taxType: 'ppn11', customTaxRate: 0, shippingCost: 50000, bilingualLabels: false, footerText: '',
+      },
+      {
+        id: crypto.randomUUID(), invoiceNumber: 'INV-2026-0004', status: 'draft', currency: 'USD',
+        invoiceDate: '2026-03-28', dueDate: '2026-04-28', paymentTerms: 'Net 30', notes: '',
+        clientId: '4', client: { id: '4', name: 'John Smith', company: 'Acme Corp', address: '123 Main St, New York, USA', phone: '+1234567890', email: 'john@acme.com' },
+        lineItems: [
+          { id: crypto.randomUUID(), description: 'UI/UX Consulting', quantity: 20, unit: 'hours', unitPrice: 150, discountType: 'percentage', discountValue: 0 },
+          { id: crypto.randomUUID(), description: 'Frontend Development', quantity: 40, unit: 'hours', unitPrice: 120, discountType: 'percentage', discountValue: 0 },
+        ],
+        additionalDiscountType: 'percentage', additionalDiscountValue: 0, taxType: 'none', customTaxRate: 0, shippingCost: 0, bilingualLabels: true, footerText: '',
+      },
+      {
+        id: crypto.randomUUID(), invoiceNumber: 'INV-2026-0005', status: 'cancelled', currency: 'IDR',
+        invoiceDate: '2026-01-10', dueDate: '2026-02-10', paymentTerms: 'Net 30', notes: 'Proyek dibatalkan.',
+        clientId: '5', client: { id: '5', name: 'Dewi Kartika', company: 'Toko Online Dewi', address: 'Jl. Malioboro No. 8, Yogyakarta', phone: '081122334455', email: 'dewi@tokodewi.com' },
+        lineItems: [
+          { id: crypto.randomUUID(), description: 'Pembuatan Aplikasi Mobile', quantity: 1, unit: 'proyek', unitPrice: 25000000, discountType: 'percentage', discountValue: 0 },
+        ],
+        additionalDiscountType: 'percentage', additionalDiscountValue: 0, taxType: 'ppn11', customTaxRate: 0, shippingCost: 0, bilingualLabels: false, footerText: '',
+      },
+    ];
+    dummyInvoices.forEach(inv => addInvoice(inv));
+    toast({ title: 'Berhasil', description: `${dummyInvoices.length} invoice dummy berhasil ditambahkan` });
+  };
 
   const stats = invoices.reduce(
     (acc, inv) => {
