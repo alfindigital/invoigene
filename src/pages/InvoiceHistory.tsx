@@ -20,7 +20,13 @@ interface InvoiceHistoryProps {
 
 export default function InvoiceHistory({ onNavigate, onEdit, onPreview }: InvoiceHistoryProps) {
   const { toast } = useToast();
-  const { invoices, deleteInvoice, updateInvoice, addInvoice, settings, setSettings } = useInvoiceStore();
+  const { invoices, deleteInvoice, updateInvoice, addInvoice, settings, setSettings, profile } = useInvoiceStore();
+
+  const handleWhatsApp = (inv: typeof invoices[0]) => {
+    const { grandTotal } = calcInvoiceTotals(inv);
+    const msg = buildWhatsAppInvoiceMessage(inv, grandTotal, profile);
+    openWhatsApp(inv.client.phone, msg);
+  };
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState<'date-desc' | 'date-asc' | 'total-desc' | 'total-asc' | 'status'>('date-desc');
