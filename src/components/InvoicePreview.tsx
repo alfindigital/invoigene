@@ -41,6 +41,12 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
         <Button variant="outline" size="sm" onClick={onBack}><ArrowLeft className="mr-2 h-4 w-4" /> Kembali</Button>
         <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Cetak</Button>
         <Button size="sm" onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
+        <Button size="sm" variant="outline" className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950" onClick={() => {
+          const msg = buildWhatsAppInvoiceMessage(invoice, totals.grandTotal, profile);
+          openWhatsApp(invoice.client.phone, msg);
+        }}>
+          <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp
+        </Button>
       </div>
 
       <div ref={printRef} className="bg-white text-black mx-auto max-w-[210mm] p-8 shadow-lg print:shadow-none print:p-0" style={{ fontFamily: 'system-ui, sans-serif', fontSize: '12px', lineHeight: '1.5' }}>
