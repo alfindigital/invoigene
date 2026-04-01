@@ -23,6 +23,24 @@ export default function InvoiceHistory({ onNavigate, onEdit, onPreview }: Invoic
   const { invoices, deleteInvoice, updateInvoice, addInvoice, settings, setSettings } = useInvoiceStore();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [sortBy, setSortBy] = useState<'date-desc' | 'date-asc' | 'total-desc' | 'total-asc' | 'status'>('date-desc');
+
+  const statusOrder: Record<string, number> = { overdue: 0, sent: 1, draft: 2, paid: 3, cancelled: 4 };
+
+  const filtered = invoices.filter(inv => {
+    const matchSearch = !search || inv.invoiceNumber.toLowerCase().includes(search.toLowerCase()) || inv.client.name.toLowerCase().includes(search.toLowerCase()) || inv.client.company.toLowerCase().includes(search.toLowerCase());
+    const matchStatus = statusFilter === 'all' || inv.status === statusFilter;
+    return matchSearch && matchStatus;
+  }).sort((a, b) => {
+    switch (sortBy) {
+      case 'date-asc': return new Date(a.invoiceDate).getTime() - new Date(b.invoiceDate).getTime();
+      case 'date-desc': return new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime();
+      case 'total-desc': return calcInvoiceTotals(b).grandTotal - calcInvoiceTotals(a).grandTotal;
+      case 'total-asc': return calcInvoiceTotals(a).grandTotal - calcInvoiceTotals(b).grandTotal;
+      case 'status': return (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9);
+      default: return 0;
+    }
+  });
 
   const filtered = invoices.filter(inv => {
     const matchSearch = !search || inv.invoiceNumber.toLowerCase().includes(search.toLowerCase()) || inv.client.name.toLowerCase().includes(search.toLowerCase()) || inv.client.company.toLowerCase().includes(search.toLowerCase());
