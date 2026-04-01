@@ -91,6 +91,19 @@ export default function InvoiceHistory({ onNavigate, onEdit, onPreview }: Invoic
             <SelectItem value="cancelled">Dibatalkan</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <ArrowUpDown className="mr-1.5 h-3.5 w-3.5" />
+            <SelectValue placeholder="Urutkan" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="date-desc">Terbaru</SelectItem>
+            <SelectItem value="date-asc">Terlama</SelectItem>
+            <SelectItem value="total-desc">Total Terbesar</SelectItem>
+            <SelectItem value="total-asc">Total Terkecil</SelectItem>
+            <SelectItem value="status">Status</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {filtered.length === 0 ? (
