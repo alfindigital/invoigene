@@ -4,11 +4,12 @@ import { calcInvoiceTotals, Invoice } from '@/types/invoice';
 import { formatCurrency, formatDate, getStatusLabel, getStatusColor } from '@/lib/formatters';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FileText, Plus, Clock, AlertTriangle, DollarSign } from 'lucide-react';
+import { FileText, Plus, Clock, AlertTriangle, DollarSign, Database } from 'lucide-react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { format, subMonths, parseISO } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
+import { useToast } from '@/hooks/use-toast';
 
 interface DashboardProps {
   onNavigate: (page: string) => void;
