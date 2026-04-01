@@ -120,9 +120,16 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
     <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl md:text-2xl font-bold text-foreground">Dashboard</h1>
-        <Button size="sm" onClick={() => onNavigate('new')}>
-          <Plus className="mr-1.5 h-4 w-4" /> Buat Invoice
-        </Button>
+        <div className="flex gap-2">
+          {invoices.length === 0 && (
+            <Button size="sm" variant="outline" onClick={seedDummyData}>
+              <Database className="mr-1.5 h-4 w-4" /> Data Dummy
+            </Button>
+          )}
+          <Button size="sm" onClick={() => onNavigate('new')}>
+            <Plus className="mr-1.5 h-4 w-4" /> Buat Invoice
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
