@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { calcInvoiceTotals } from '@/types/invoice';
-import { formatCurrency, formatDate, getStatusLabel, getStatusColor } from '@/lib/formatters';
+import { formatCurrency, formatDate, getStatusLabel, getStatusColor, buildWhatsAppInvoiceMessage, openWhatsApp } from '@/lib/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Edit, Copy, Trash2, CheckCircle, Eye, Download, ArrowUpDown } from 'lucide-react';
+import { Search, Edit, Copy, Trash2, CheckCircle, Eye, Download, ArrowUpDown, MessageCircle } from 'lucide-react';
 
 interface InvoiceHistoryProps {
   onNavigate: (page: string) => void;
@@ -20,7 +20,13 @@ interface InvoiceHistoryProps {
 
 export default function InvoiceHistory({ onNavigate, onEdit, onPreview }: InvoiceHistoryProps) {
   const { toast } = useToast();
-  const { invoices, deleteInvoice, updateInvoice, addInvoice, settings, setSettings } = useInvoiceStore();
+  const { invoices, deleteInvoice, updateInvoice, addInvoice, settings, setSettings, profile } = useInvoiceStore();
+
+  const handleWhatsApp = (inv: typeof invoices[0]) => {
+    const { grandTotal } = calcInvoiceTotals(inv);
+    const msg = buildWhatsAppInvoiceMessage(inv, grandTotal, profile);
+    openWhatsApp(inv.client.phone, msg);
+  };
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState<'date-desc' | 'date-asc' | 'total-desc' | 'total-asc' | 'status'>('date-desc');
@@ -145,6 +151,7 @@ export default function InvoiceHistory({ onNavigate, onEdit, onPreview }: Invoic
                           <Eye className="h-4 w-4" />
                         </Button>
                       )}
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" onClick={() => handleWhatsApp(inv)} title="Kirim via WhatsApp"><MessageCircle className="h-4 w-4" /></Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(inv.id)}><Edit className="h-4 w-4" /></Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDuplicate(inv)}><Copy className="h-4 w-4" /></Button>
                       <AlertDialog>
@@ -208,6 +215,7 @@ export default function InvoiceHistory({ onNavigate, onEdit, onPreview }: Invoic
                               <Eye className="h-4 w-4" />
                             </Button>
                           )}
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" onClick={() => handleWhatsApp(inv)} title="Kirim via WhatsApp"><MessageCircle className="h-4 w-4" /></Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(inv.id)}><Edit className="h-4 w-4" /></Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDuplicate(inv)}><Copy className="h-4 w-4" /></Button>
                           <AlertDialog>

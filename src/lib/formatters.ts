@@ -60,3 +60,31 @@ export function addDays(dateStr: string, days: number): string {
   d.setDate(d.getDate() + days);
   return d.toISOString().split('T')[0];
 }
+
+export function buildWhatsAppInvoiceMessage(inv: { invoiceNumber: string; invoiceDate: string; dueDate: string; status: string; currency: Currency; client: { name: string; company: string; phone: string } }, grandTotal: number, profile?: { companyName?: string; bankName?: string; bankAccountNumber?: string; bankAccountHolder?: string }): string {
+  const lines = [
+    `📄 *Invoice ${inv.invoiceNumber}*`,
+    '',
+    `Kepada: ${inv.client.name}${inv.client.company ? ` (${inv.client.company})` : ''}`,
+    `Tanggal: ${formatDate(inv.invoiceDate)}`,
+    `Jatuh Tempo: ${formatDate(inv.dueDate)}`,
+    `Status: ${getStatusLabel(inv.status)}`,
+    '',
+    `💰 *Total: ${formatCurrency(grandTotal, inv.currency)}*`,
+  ];
+  if (profile?.bankName) {
+    lines.push('', '🏦 *Pembayaran:*', `Bank: ${profile.bankName}`, `No. Rek: ${profile.bankAccountNumber}`, `A/N: ${profile.bankAccountHolder}`);
+  }
+  if (profile?.companyName) {
+    lines.push('', `— ${profile.companyName}`);
+  }
+  return lines.join('\n');
+}
+
+export function openWhatsApp(phone: string, message: string) {
+  const cleaned = phone.replace(/[^0-9]/g, '');
+  const url = cleaned
+    ? `https://wa.me/${cleaned.startsWith('0') ? '62' + cleaned.slice(1) : cleaned}?text=${encodeURIComponent(message)}`
+    : `https://wa.me/?text=${encodeURIComponent(message)}`;
+  window.open(url, '_blank');
+}

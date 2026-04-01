@@ -1,8 +1,8 @@
 import { useRef } from 'react';
 import { Invoice, BusinessProfile, calcLineItemSubtotal, calcInvoiceTotals } from '@/types/invoice';
-import { formatCurrency, formatDate, getStatusLabel } from '@/lib/formatters';
+import { formatCurrency, formatDate, getStatusLabel, buildWhatsAppInvoiceMessage, openWhatsApp } from '@/lib/formatters';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Download, Printer } from 'lucide-react';
+import { ArrowLeft, Download, Printer, MessageCircle } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -41,6 +41,12 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
         <Button variant="outline" size="sm" onClick={onBack}><ArrowLeft className="mr-2 h-4 w-4" /> Kembali</Button>
         <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Cetak</Button>
         <Button size="sm" onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
+        <Button size="sm" variant="outline" className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950" onClick={() => {
+          const msg = buildWhatsAppInvoiceMessage(invoice, totals.grandTotal, profile);
+          openWhatsApp(invoice.client.phone, msg);
+        }}>
+          <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp
+        </Button>
       </div>
 
       <div ref={printRef} className="bg-white text-black mx-auto max-w-[210mm] p-8 shadow-lg print:shadow-none print:p-0" style={{ fontFamily: 'system-ui, sans-serif', fontSize: '12px', lineHeight: '1.5' }}>
