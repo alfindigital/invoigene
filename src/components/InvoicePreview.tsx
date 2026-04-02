@@ -49,7 +49,7 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
         </Button>
       </div>
 
-      <div ref={printRef} className="bg-white text-black mx-auto max-w-[210mm] p-8 shadow-lg print:shadow-none print:p-0" style={{ fontFamily: 'system-ui, sans-serif', fontSize: '12px', lineHeight: '1.5' }}>
+      <div ref={printRef} className="bg-white text-black mx-auto max-w-[210mm] p-4 sm:p-8 shadow-lg print:shadow-none print:p-0 overflow-x-auto" style={{ fontFamily: 'system-ui, sans-serif', fontSize: '12px', lineHeight: '1.5' }}>
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center gap-4">
