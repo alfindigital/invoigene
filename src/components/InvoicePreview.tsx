@@ -51,20 +51,20 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
 
       <div ref={printRef} className="bg-white text-black mx-auto max-w-[210mm] p-4 sm:p-8 shadow-lg print:shadow-none print:p-0 overflow-x-auto" style={{ fontFamily: 'system-ui, sans-serif', fontSize: '12px', lineHeight: '1.5' }}>
         {/* Header */}
-        <div className="flex justify-between items-start mb-6">
-          <div className="flex items-center gap-4">
-            {profile.logo && <img src={profile.logo} alt="Logo" className="h-16 w-16 object-contain" />}
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            {profile.logo && <img src={profile.logo} alt="Logo" className="h-12 w-12 sm:h-16 sm:w-16 object-contain" />}
             <div>
-              <h1 className="text-xl font-bold">{profile.companyName || 'Nama Perusahaan'}</h1>
+              <h1 className="text-base sm:text-xl font-bold">{profile.companyName || 'Nama Perusahaan'}</h1>
               <p className="text-gray-600 whitespace-pre-line text-xs">{profile.address}</p>
               {profile.phone && <p className="text-gray-600 text-xs">{profile.phone}</p>}
               {profile.email && <p className="text-gray-600 text-xs">{profile.email}</p>}
               {profile.taxId && <p className="text-gray-600 text-xs">NPWP: {profile.taxId}</p>}
             </div>
           </div>
-          <div className="text-right">
-            <h2 className="text-2xl font-bold text-gray-800">INVOICE</h2>
-            <p className="font-semibold text-base">{invoice.invoiceNumber}</p>
+          <div className="sm:text-right">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">INVOICE</h2>
+            <p className="font-semibold text-sm sm:text-base">{invoice.invoiceNumber}</p>
           </div>
         </div>
 
