@@ -191,13 +191,13 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
               {recent.map(inv => {
                 const { grandTotal } = calcInvoiceTotals(inv);
                 return (
-                  <div key={inv.id} className="flex items-center justify-between rounded-xl border border-border/40 bg-background/50 backdrop-blur-sm p-3 hover:bg-accent/30 transition-colors">
-                    <div className="space-y-1">
-                      <p className="font-medium text-sm">{inv.invoiceNumber}</p>
-                      <p className="text-xs text-muted-foreground">{inv.client.name || inv.client.company} · {formatDate(inv.invoiceDate)}</p>
+                  <div key={inv.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-border/40 bg-background/50 backdrop-blur-sm p-3 hover:bg-accent/30 transition-colors">
+                    <div className="space-y-0.5 min-w-0">
+                      <p className="font-medium text-sm truncate">{inv.invoiceNumber}</p>
+                      <p className="text-xs text-muted-foreground truncate">{inv.client.name || inv.client.company} · {formatDate(inv.invoiceDate)}</p>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-semibold text-sm">{formatCurrency(grandTotal, inv.currency)}</span>
+                    <div className="flex items-center gap-2 justify-between sm:justify-end flex-shrink-0">
+                      <span className="font-semibold text-sm whitespace-nowrap">{formatCurrency(grandTotal, inv.currency)}</span>
                       <Badge variant="secondary" className={getStatusColor(inv.status)}>
                         {getStatusLabel(inv.status)}
                       </Badge>

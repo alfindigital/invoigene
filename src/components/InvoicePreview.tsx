@@ -115,6 +115,7 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
             ))}
           </tbody>
         </table>
+        </div>
 
         {/* Summary */}
         <div className="flex justify-end mb-6">
