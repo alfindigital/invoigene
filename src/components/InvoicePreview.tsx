@@ -69,7 +69,7 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
         </div>
 
         {/* Dates & Client */}
-        <div className="flex justify-between mb-6">
+        <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
           <div>
             <h3 className="font-semibold text-sm mb-1">{bil ? 'Kepada / Bill To' : 'Kepada'}</h3>
             <p className="font-semibold">{invoice.client.name}</p>
