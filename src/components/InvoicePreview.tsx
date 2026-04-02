@@ -37,8 +37,8 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 print:hidden">
-        <Button variant="outline" size="sm" onClick={onBack}><ArrowLeft className="mr-2 h-4 w-4" /> Kembali</Button>
+      <div className="flex flex-wrap items-center gap-2 print:hidden">
+        <Button variant="outline" size="sm" onClick={onBack}><ArrowLeft className="mr-1.5 h-4 w-4" /> <span className="hidden sm:inline">Kembali</span></Button>
         <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Cetak</Button>
         <Button size="sm" onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
         <Button size="sm" variant="outline" className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950" onClick={() => {
