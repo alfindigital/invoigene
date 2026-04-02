@@ -37,8 +37,8 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 print:hidden">
-        <Button variant="outline" size="sm" onClick={onBack}><ArrowLeft className="mr-2 h-4 w-4" /> Kembali</Button>
+      <div className="flex flex-wrap items-center gap-2 print:hidden">
+        <Button variant="outline" size="sm" onClick={onBack}><ArrowLeft className="mr-1.5 h-4 w-4" /> <span className="hidden sm:inline">Kembali</span></Button>
         <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Cetak</Button>
         <Button size="sm" onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
         <Button size="sm" variant="outline" className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950" onClick={() => {
@@ -49,27 +49,27 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
         </Button>
       </div>
 
-      <div ref={printRef} className="bg-white text-black mx-auto max-w-[210mm] p-8 shadow-lg print:shadow-none print:p-0" style={{ fontFamily: 'system-ui, sans-serif', fontSize: '12px', lineHeight: '1.5' }}>
+      <div ref={printRef} className="bg-white text-black mx-auto max-w-[210mm] p-4 sm:p-8 shadow-lg print:shadow-none print:p-0 overflow-x-auto" style={{ fontFamily: 'system-ui, sans-serif', fontSize: '12px', lineHeight: '1.5' }}>
         {/* Header */}
-        <div className="flex justify-between items-start mb-6">
-          <div className="flex items-center gap-4">
-            {profile.logo && <img src={profile.logo} alt="Logo" className="h-16 w-16 object-contain" />}
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            {profile.logo && <img src={profile.logo} alt="Logo" className="h-12 w-12 sm:h-16 sm:w-16 object-contain" />}
             <div>
-              <h1 className="text-xl font-bold">{profile.companyName || 'Nama Perusahaan'}</h1>
+              <h1 className="text-base sm:text-xl font-bold">{profile.companyName || 'Nama Perusahaan'}</h1>
               <p className="text-gray-600 whitespace-pre-line text-xs">{profile.address}</p>
               {profile.phone && <p className="text-gray-600 text-xs">{profile.phone}</p>}
               {profile.email && <p className="text-gray-600 text-xs">{profile.email}</p>}
               {profile.taxId && <p className="text-gray-600 text-xs">NPWP: {profile.taxId}</p>}
             </div>
           </div>
-          <div className="text-right">
-            <h2 className="text-2xl font-bold text-gray-800">INVOICE</h2>
-            <p className="font-semibold text-base">{invoice.invoiceNumber}</p>
+          <div className="sm:text-right">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">INVOICE</h2>
+            <p className="font-semibold text-sm sm:text-base">{invoice.invoiceNumber}</p>
           </div>
         </div>
 
         {/* Dates & Client */}
-        <div className="flex justify-between mb-6">
+        <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
           <div>
             <h3 className="font-semibold text-sm mb-1">{bil ? 'Kepada / Bill To' : 'Kepada'}</h3>
             <p className="font-semibold">{invoice.client.name}</p>
@@ -78,7 +78,7 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
             {invoice.client.phone && <p className="text-xs text-gray-600">{invoice.client.phone}</p>}
             {invoice.client.email && <p className="text-xs text-gray-600">{invoice.client.email}</p>}
           </div>
-          <div className="text-right text-xs space-y-1">
+          <div className="sm:text-right text-xs space-y-1">
             <p><span className="text-gray-500">{bil ? 'Tanggal / Date:' : 'Tanggal:'}</span> {formatDate(invoice.invoiceDate)}</p>
             <p><span className="text-gray-500">{bil ? 'Jatuh Tempo / Due:' : 'Jatuh Tempo:'}</span> {formatDate(invoice.dueDate)}</p>
             <p><span className="text-gray-500">Status:</span> {getStatusLabel(invoice.status)}</p>
@@ -86,7 +86,8 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
         </div>
 
         {/* Line Items Table */}
-        <table className="w-full mb-6" style={{ borderCollapse: 'collapse' }}>
+        <div className="overflow-x-auto -mx-4 sm:mx-0 mb-6">
+        <table className="w-full min-w-[500px]" style={{ borderCollapse: 'collapse' }}>
           <thead>
             <tr className="border-b-2 border-gray-800">
               <th className="text-left py-2 text-xs font-semibold" style={{ width: '30px' }}>No</th>
@@ -114,6 +115,7 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
             ))}
           </tbody>
         </table>
+        </div>
 
         {/* Summary */}
         <div className="flex justify-end mb-6">

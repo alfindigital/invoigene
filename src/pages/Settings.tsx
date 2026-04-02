@@ -132,20 +132,20 @@ export default function Settings() {
       <Card>
         <CardHeader><CardTitle>Katalog Item</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2 items-end">
-            <div className="flex-1 space-y-1">
+          <div className="grid gap-2 sm:grid-cols-[1fr_80px_100px_auto] items-end">
+            <div className="space-y-1">
               <Label className="text-xs">Deskripsi</Label>
               <Input value={newCat.description} onChange={e => setNewCat(prev => ({ ...prev, description: e.target.value }))} placeholder="Nama item..." />
             </div>
-            <div className="w-20 space-y-1">
+            <div className="space-y-1">
               <Label className="text-xs">Satuan</Label>
               <Input value={newCat.unit} onChange={e => setNewCat(prev => ({ ...prev, unit: e.target.value }))} />
             </div>
-            <div className="w-28 space-y-1">
+            <div className="space-y-1">
               <Label className="text-xs">Harga</Label>
               <Input type="number" value={newCat.unitPrice} onChange={e => setNewCat(prev => ({ ...prev, unitPrice: Number(e.target.value) }))} />
             </div>
-            <Button size="sm" onClick={handleAddCatalog}><Plus className="h-4 w-4" /></Button>
+            <Button size="sm" onClick={handleAddCatalog} className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-1" /><span className="sm:hidden">Tambah</span></Button>
           </div>
           {catalog.length > 0 && (
             <div className="space-y-2">
