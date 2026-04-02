@@ -78,7 +78,7 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
             {invoice.client.phone && <p className="text-xs text-gray-600">{invoice.client.phone}</p>}
             {invoice.client.email && <p className="text-xs text-gray-600">{invoice.client.email}</p>}
           </div>
-          <div className="text-right text-xs space-y-1">
+          <div className="sm:text-right text-xs space-y-1">
             <p><span className="text-gray-500">{bil ? 'Tanggal / Date:' : 'Tanggal:'}</span> {formatDate(invoice.invoiceDate)}</p>
             <p><span className="text-gray-500">{bil ? 'Jatuh Tempo / Due:' : 'Jatuh Tempo:'}</span> {formatDate(invoice.dueDate)}</p>
             <p><span className="text-gray-500">Status:</span> {getStatusLabel(invoice.status)}</p>
