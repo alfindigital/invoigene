@@ -86,7 +86,8 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
         </div>
 
         {/* Line Items Table */}
-        <table className="w-full mb-6" style={{ borderCollapse: 'collapse' }}>
+        <div className="overflow-x-auto -mx-4 sm:mx-0 mb-6">
+        <table className="w-full min-w-[500px]" style={{ borderCollapse: 'collapse' }}>
           <thead>
             <tr className="border-b-2 border-gray-800">
               <th className="text-left py-2 text-xs font-semibold" style={{ width: '30px' }}>No</th>
