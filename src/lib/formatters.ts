@@ -1,6 +1,6 @@
 import { Currency } from '@/types/invoice';
 
-export function formatCurrency(amount: number, currency?: Currency): string {
+export function formatCurrency(amount: number, _currency?: Currency): string {
   const formatted = Math.round(amount)
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, '.');

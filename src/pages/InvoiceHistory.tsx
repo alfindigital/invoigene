@@ -17,7 +17,7 @@ interface InvoiceHistoryProps {
   onPreview?: (id: string) => void;
 }
 
-export default function InvoiceHistory({ onNavigate, onEdit, onPreview }: InvoiceHistoryProps) {
+export default function InvoiceHistory({ onEdit, onPreview }: InvoiceHistoryProps) {
   const { toast } = useToast();
   const { invoices, deleteInvoice, updateInvoice, addInvoice, settings, profile } = useInvoiceStore();
 

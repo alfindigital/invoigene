@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { Invoice, BusinessProfile, calcLineItemSubtotal, calcInvoiceTotals } from '@/types/invoice';
-import { formatCurrency, formatDate, getStatusLabel, getBuyerDisplay, buildWhatsAppNotaMessage, openWhatsApp } from '@/lib/formatters';
+import { formatCurrency, formatDate, getBuyerDisplay, buildWhatsAppNotaMessage, openWhatsApp } from '@/lib/formatters';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Download, Printer, MessageCircle } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';

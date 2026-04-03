@@ -4,7 +4,7 @@ import { calcInvoiceTotals, Invoice } from '@/types/invoice';
 import { formatCurrency, formatDate, getStatusLabel, getStatusColor, getBuyerDisplay, todayISO } from '@/lib/formatters';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FileText, Plus, Clock, AlertTriangle, DollarSign, Database } from 'lucide-react';
+import { FileText, Plus, Clock, DollarSign, Database } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface DashboardProps {
