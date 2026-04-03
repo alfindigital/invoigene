@@ -16,9 +16,7 @@ interface InvoiceFormProps {
   onNavigate: (page: string) => void;
 }
 
-function newLineItem(): LineItem {
-  return { id: crypto.randomUUID(), description: '', quantity: 1, unit: 'pcs', unitPrice: 0, discountType: 'fixed', discountValue: 0 };
-}
+// Line items are created inline via catalog or manual add
 
 export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
   const { toast } = useToast();
