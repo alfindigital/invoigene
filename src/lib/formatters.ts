@@ -1,14 +1,10 @@
 import { Currency } from '@/types/invoice';
 
-export function formatCurrency(amount: number, currency: Currency): string {
-  if (currency === 'IDR') {
-    const formatted = Math.round(amount)
-      .toString()
-      .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    return `Rp ${formatted}`;
-  }
-  const symbol = currency === 'USD' ? '$' : 'S$';
-  return `${symbol}${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+export function formatCurrency(amount: number, _currency?: Currency): string {
+  const formatted = Math.round(amount)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return `Rp ${formatted}`;
 }
 
 export function formatDate(dateStr: string): string {
@@ -61,19 +57,27 @@ export function addDays(dateStr: string, days: number): string {
   return d.toISOString().split('T')[0];
 }
 
-export function buildWhatsAppInvoiceMessage(inv: { invoiceNumber: string; invoiceDate: string; dueDate: string; status: string; currency: Currency; client: { name: string; company: string; phone: string } }, grandTotal: number, profile?: { companyName?: string; bankName?: string; bankAccountNumber?: string; bankAccountHolder?: string }): string {
+export function getBuyerDisplay(inv: { buyerName?: string; buyerPhone?: string; client?: { name: string; company: string } }): string {
+  if (inv.buyerName) return inv.buyerName;
+  if (inv.client?.name) return inv.client.name;
+  if (inv.client?.company) return inv.client.company;
+  return 'Umum';
+}
+
+export function buildWhatsAppNotaMessage(inv: { invoiceNumber: string; invoiceDate: string; buyerName?: string; currency: Currency; lineItems: { description: string; quantity: number; unitPrice: number }[] }, grandTotal: number, profile?: { companyName?: string; bankName?: string; bankAccountNumber?: string; bankAccountHolder?: string }): string {
   const lines = [
-    `📄 *Invoice ${inv.invoiceNumber}*`,
+    `🧾 *Nota ${inv.invoiceNumber}*`,
     '',
-    `Kepada: ${inv.client.name}${inv.client.company ? ` (${inv.client.company})` : ''}`,
+    inv.buyerName ? `Pembeli: ${inv.buyerName}` : '',
     `Tanggal: ${formatDate(inv.invoiceDate)}`,
-    `Jatuh Tempo: ${formatDate(inv.dueDate)}`,
-    `Status: ${getStatusLabel(inv.status)}`,
     '',
-    `💰 *Total: ${formatCurrency(grandTotal, inv.currency)}*`,
-  ];
+    '*Detail:*',
+    ...inv.lineItems.map((item, i) => `${i + 1}. ${item.description} x${item.quantity} = ${formatCurrency(item.quantity * item.unitPrice)}`),
+    '',
+    `💰 *Total: ${formatCurrency(grandTotal)}*`,
+  ].filter(Boolean);
   if (profile?.bankName) {
-    lines.push('', '🏦 *Pembayaran:*', `Bank: ${profile.bankName}`, `No. Rek: ${profile.bankAccountNumber}`, `A/N: ${profile.bankAccountHolder}`);
+    lines.push('', '🏦 *Transfer ke:*', `${profile.bankName} ${profile.bankAccountNumber}`, `a/n ${profile.bankAccountHolder}`);
   }
   if (profile?.companyName) {
     lines.push('', `— ${profile.companyName}`);

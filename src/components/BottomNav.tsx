@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 
 const items = [
   { title: 'Dashboard', key: 'dashboard', icon: LayoutDashboard },
-  { title: 'Buat', key: 'new', icon: FilePlus },
+  { title: 'Nota Baru', key: 'new', icon: FilePlus },
   { title: 'Riwayat', key: 'history', icon: History },
   { title: 'Setelan', key: 'settings', icon: Settings },
 ];

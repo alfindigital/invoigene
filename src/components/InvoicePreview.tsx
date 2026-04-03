@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { Invoice, BusinessProfile, calcLineItemSubtotal, calcInvoiceTotals } from '@/types/invoice';
-import { formatCurrency, formatDate, getStatusLabel, buildWhatsAppInvoiceMessage, openWhatsApp } from '@/lib/formatters';
+import { formatCurrency, formatDate, getBuyerDisplay, buildWhatsAppNotaMessage, openWhatsApp } from '@/lib/formatters';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Download, Printer, MessageCircle } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -16,7 +16,7 @@ interface InvoicePreviewProps {
 export default function InvoicePreview({ invoice, profile, onBack }: InvoicePreviewProps) {
   const printRef = useRef<HTMLDivElement>(null);
   const totals = calcInvoiceTotals(invoice);
-  const bil = invoice.bilingualLabels;
+  const buyer = getBuyerDisplay(invoice);
 
   const handleDownloadPdf = async () => {
     if (!printRef.current) return;
@@ -29,140 +29,113 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
     pdf.save(`${invoice.invoiceNumber}.pdf`);
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const qrData = `Invoice: ${invoice.invoiceNumber}\nTotal: ${formatCurrency(totals.grandTotal, invoice.currency)}\nBank: ${profile.bankName}\nRek: ${profile.bankAccountNumber}\nA/N: ${profile.bankAccountHolder}`;
+  const qrData = profile.bankName
+    ? `Bank: ${profile.bankName}\nRek: ${profile.bankAccountNumber}\nA/N: ${profile.bankAccountHolder}\nTotal: ${formatCurrency(totals.grandTotal)}`
+    : `Nota: ${invoice.invoiceNumber}\nTotal: ${formatCurrency(totals.grandTotal)}`;
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2 print:hidden">
-        <Button variant="outline" size="sm" onClick={onBack}><ArrowLeft className="mr-1.5 h-4 w-4" /> <span className="hidden sm:inline">Kembali</span></Button>
-        <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Cetak</Button>
-        <Button size="sm" onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
+        <Button variant="outline" size="sm" onClick={onBack}><ArrowLeft className="mr-1.5 h-4 w-4" /> Kembali</Button>
+        <Button variant="outline" size="sm" onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" /> Cetak</Button>
+        <Button size="sm" onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4" /> PDF</Button>
         <Button size="sm" variant="outline" className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950" onClick={() => {
-          const msg = buildWhatsAppInvoiceMessage(invoice, totals.grandTotal, profile);
-          openWhatsApp(invoice.client.phone, msg);
+          const msg = buildWhatsAppNotaMessage(invoice, totals.grandTotal, profile);
+          openWhatsApp(invoice.buyerPhone || '', msg);
         }}>
           <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp
         </Button>
       </div>
 
-      <div ref={printRef} className="bg-white text-black mx-auto max-w-[210mm] p-4 sm:p-8 shadow-lg print:shadow-none print:p-0 overflow-x-auto" style={{ fontFamily: 'system-ui, sans-serif', fontSize: '12px', lineHeight: '1.5' }}>
+      <div ref={printRef} className="bg-white text-black mx-auto max-w-[210mm] p-4 sm:p-6 shadow-lg print:shadow-none print:p-0" style={{ fontFamily: 'system-ui, sans-serif', fontSize: '12px', lineHeight: '1.5' }}>
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+        <div className="flex justify-between items-start gap-4 mb-4">
           <div className="flex items-center gap-3">
-            {profile.logo && <img src={profile.logo} alt="Logo" className="h-12 w-12 sm:h-16 sm:w-16 object-contain" />}
+            {profile.logo && <img src={profile.logo} alt="Logo" className="h-12 w-12 object-contain" />}
             <div>
-              <h1 className="text-base sm:text-xl font-bold">{profile.companyName || 'Nama Perusahaan'}</h1>
-              <p className="text-gray-600 whitespace-pre-line text-xs">{profile.address}</p>
+              <h1 className="text-base font-bold">{profile.companyName || 'Nama Usaha'}</h1>
+              {profile.address && <p className="text-gray-600 text-xs">{profile.address}</p>}
               {profile.phone && <p className="text-gray-600 text-xs">{profile.phone}</p>}
-              {profile.email && <p className="text-gray-600 text-xs">{profile.email}</p>}
-              {profile.taxId && <p className="text-gray-600 text-xs">NPWP: {profile.taxId}</p>}
             </div>
           </div>
-          <div className="sm:text-right">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">INVOICE</h2>
-            <p className="font-semibold text-sm sm:text-base">{invoice.invoiceNumber}</p>
+          <div className="text-right">
+            <h2 className="text-lg font-bold text-gray-800">NOTA</h2>
+            <p className="font-semibold text-sm">{invoice.invoiceNumber}</p>
+            <p className="text-xs text-gray-500">{formatDate(invoice.invoiceDate)}</p>
           </div>
         </div>
 
-        {/* Dates & Client */}
-        <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-          <div>
-            <h3 className="font-semibold text-sm mb-1">{bil ? 'Kepada / Bill To' : 'Kepada'}</h3>
-            <p className="font-semibold">{invoice.client.name}</p>
-            {invoice.client.company && <p>{invoice.client.company}</p>}
-            <p className="text-gray-600 whitespace-pre-line text-xs">{invoice.client.address}</p>
-            {invoice.client.phone && <p className="text-xs text-gray-600">{invoice.client.phone}</p>}
-            {invoice.client.email && <p className="text-xs text-gray-600">{invoice.client.email}</p>}
+        {/* Buyer */}
+        {buyer !== 'Umum' && (
+          <div className="mb-4 text-sm">
+            <span className="text-gray-500">Pembeli:</span> <span className="font-medium">{buyer}</span>
+            {invoice.buyerPhone && <span className="text-gray-500 ml-2">({invoice.buyerPhone})</span>}
           </div>
-          <div className="sm:text-right text-xs space-y-1">
-            <p><span className="text-gray-500">{bil ? 'Tanggal / Date:' : 'Tanggal:'}</span> {formatDate(invoice.invoiceDate)}</p>
-            <p><span className="text-gray-500">{bil ? 'Jatuh Tempo / Due:' : 'Jatuh Tempo:'}</span> {formatDate(invoice.dueDate)}</p>
-            <p><span className="text-gray-500">Status:</span> {getStatusLabel(invoice.status)}</p>
-          </div>
-        </div>
+        )}
 
-        {/* Line Items Table */}
-        <div className="overflow-x-auto -mx-4 sm:mx-0 mb-6">
-        <table className="w-full min-w-[500px]" style={{ borderCollapse: 'collapse' }}>
+        {/* Items */}
+        <table className="w-full mb-4" style={{ borderCollapse: 'collapse' }}>
           <thead>
             <tr className="border-b-2 border-gray-800">
-              <th className="text-left py-2 text-xs font-semibold" style={{ width: '30px' }}>No</th>
-              <th className="text-left py-2 text-xs font-semibold">{bil ? 'Deskripsi / Description' : 'Deskripsi'}</th>
-              <th className="text-right py-2 text-xs font-semibold" style={{ width: '50px' }}>{bil ? 'Qty' : 'Qty'}</th>
-              <th className="text-center py-2 text-xs font-semibold" style={{ width: '50px' }}>{bil ? 'Satuan / Unit' : 'Satuan'}</th>
-              <th className="text-right py-2 text-xs font-semibold" style={{ width: '100px' }}>{bil ? 'Harga / Price' : 'Harga'}</th>
-              <th className="text-right py-2 text-xs font-semibold" style={{ width: '70px' }}>{bil ? 'Diskon / Disc.' : 'Diskon'}</th>
-              <th className="text-right py-2 text-xs font-semibold" style={{ width: '110px' }}>{bil ? 'Jumlah / Amount' : 'Jumlah'}</th>
+              <th className="text-left py-1.5 text-xs font-semibold" style={{ width: '30px' }}>No</th>
+              <th className="text-left py-1.5 text-xs font-semibold">Item</th>
+              <th className="text-right py-1.5 text-xs font-semibold" style={{ width: '40px' }}>Qty</th>
+              <th className="text-right py-1.5 text-xs font-semibold" style={{ width: '90px' }}>Harga</th>
+              <th className="text-right py-1.5 text-xs font-semibold" style={{ width: '100px' }}>Jumlah</th>
             </tr>
           </thead>
           <tbody>
             {invoice.lineItems.map((item, idx) => (
               <tr key={item.id} className="border-b border-gray-200">
-                <td className="py-2 text-xs">{idx + 1}</td>
-                <td className="py-2 text-xs">{item.description}</td>
-                <td className="py-2 text-xs text-right">{item.quantity}</td>
-                <td className="py-2 text-xs text-center">{item.unit}</td>
-                <td className="py-2 text-xs text-right">{formatCurrency(item.unitPrice, invoice.currency)}</td>
-                <td className="py-2 text-xs text-right">
-                  {item.discountValue > 0 ? (item.discountType === 'percentage' ? `${item.discountValue}%` : formatCurrency(item.discountValue, invoice.currency)) : '-'}
-                </td>
-                <td className="py-2 text-xs text-right font-medium">{formatCurrency(calcLineItemSubtotal(item), invoice.currency)}</td>
+                <td className="py-1.5 text-xs">{idx + 1}</td>
+                <td className="py-1.5 text-xs">{item.description}</td>
+                <td className="py-1.5 text-xs text-right">{item.quantity}</td>
+                <td className="py-1.5 text-xs text-right">{formatCurrency(item.unitPrice)}</td>
+                <td className="py-1.5 text-xs text-right font-medium">{formatCurrency(calcLineItemSubtotal(item))}</td>
               </tr>
             ))}
           </tbody>
         </table>
-        </div>
 
         {/* Summary */}
-        <div className="flex justify-end mb-6">
-          <div className="w-64 space-y-1 text-xs">
-            <div className="flex justify-between"><span>{bil ? 'Subtotal' : 'Subtotal'}</span><span>{formatCurrency(totals.subtotal, invoice.currency)}</span></div>
+        <div className="flex justify-end mb-4">
+          <div className="w-56 space-y-0.5 text-xs">
+            <div className="flex justify-between"><span>Subtotal</span><span>{formatCurrency(totals.subtotal)}</span></div>
             {totals.additionalDiscount > 0 && (
-              <div className="flex justify-between"><span>{bil ? 'Diskon / Discount' : 'Diskon'}</span><span>-{formatCurrency(totals.additionalDiscount, invoice.currency)}</span></div>
+              <div className="flex justify-between"><span>Diskon</span><span>-{formatCurrency(totals.additionalDiscount)}</span></div>
             )}
             {totals.taxRate > 0 && (
-              <div className="flex justify-between"><span>{bil ? `Pajak / Tax (${totals.taxRate}%)` : `Pajak (${totals.taxRate}%)`}</span><span>{formatCurrency(totals.taxAmount, invoice.currency)}</span></div>
+              <div className="flex justify-between"><span>Pajak ({totals.taxRate}%)</span><span>{formatCurrency(totals.taxAmount)}</span></div>
             )}
-            {invoice.shippingCost > 0 && (
-              <div className="flex justify-between"><span>{bil ? 'Pengiriman / Shipping' : 'Pengiriman'}</span><span>{formatCurrency(invoice.shippingCost, invoice.currency)}</span></div>
+            {(invoice.shippingCost || 0) > 0 && (
+              <div className="flex justify-between"><span>Ongkir</span><span>{formatCurrency(invoice.shippingCost)}</span></div>
             )}
-            <div className="flex justify-between border-t-2 border-gray-800 pt-2 text-base font-bold">
-              <span>Grand Total</span>
-              <span>{formatCurrency(totals.grandTotal, invoice.currency)}</span>
+            <div className="flex justify-between border-t-2 border-gray-800 pt-1.5 text-sm font-bold">
+              <span>Total</span>
+              <span>{formatCurrency(totals.grandTotal)}</span>
             </div>
           </div>
         </div>
 
-        {/* Bank Details */}
+        {/* Bank + QR */}
         {profile.bankName && (
-          <div className="mb-6 flex gap-6 items-start">
-            <div className="flex-1">
-              <h3 className="font-semibold text-sm mb-1">{bil ? 'Pembayaran / Payment' : 'Pembayaran'}</h3>
-              <div className="text-xs space-y-0.5">
-                <p>Bank: {profile.bankName}</p>
-                <p>{bil ? 'No. Rekening / Account:' : 'No. Rekening:'} {profile.bankAccountNumber}</p>
-                <p>{bil ? 'Atas Nama / Name:' : 'Atas Nama:'} {profile.bankAccountHolder}</p>
-              </div>
+          <div className="flex gap-4 items-start mb-4">
+            <div className="flex-1 text-xs">
+              <p className="font-semibold mb-0.5">Transfer ke:</p>
+              <p>{profile.bankName} {profile.bankAccountNumber}</p>
+              <p>a/n {profile.bankAccountHolder}</p>
             </div>
-            <QRCodeSVG value={qrData} size={80} />
+            <QRCodeSVG value={qrData} size={64} />
           </div>
         )}
 
         {/* Notes */}
         {invoice.notes && (
-          <div className="mb-4">
-            <h3 className="font-semibold text-sm mb-1">{bil ? 'Catatan / Notes' : 'Catatan'}</h3>
-            <p className="text-xs text-gray-600 whitespace-pre-line">{invoice.notes}</p>
-          </div>
+          <p className="text-xs text-gray-500 mb-2">{invoice.notes}</p>
         )}
 
-        {/* Footer */}
-        <div className="text-center text-xs text-gray-500 border-t pt-4 mt-8">
-          {invoice.footerText}
+        <div className="text-center text-[10px] text-gray-400 border-t pt-3 mt-6">
+          Terima kasih atas pembeliannya! 🙏
         </div>
       </div>
     </div>
