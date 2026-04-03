@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
-import { BusinessProfile, CatalogItem } from '@/types/invoice';
+import { BusinessProfile } from '@/types/invoice';
 import { formatCurrency } from '@/lib/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
