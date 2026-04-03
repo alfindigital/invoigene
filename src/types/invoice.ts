@@ -1,4 +1,4 @@
-export type Currency = 'IDR' | 'USD' | 'SGD';
+export type Currency = 'IDR';
 
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
 
@@ -47,12 +47,11 @@ export interface Invoice {
   invoiceNumber: string;
   status: InvoiceStatus;
   currency: Currency;
-  invoiceDate: string; // ISO date string
+  invoiceDate: string;
   dueDate: string;
-  paymentTerms: string;
   notes: string;
-  clientId: string;
-  client: Client;
+  buyerName: string;
+  buyerPhone: string;
   lineItems: LineItem[];
   additionalDiscountType: DiscountType;
   additionalDiscountValue: number;
@@ -60,12 +59,16 @@ export interface Invoice {
   customTaxRate: number;
   shippingCost: number;
   paidDate?: string;
-  bilingualLabels: boolean;
-  footerText: string;
+  // Legacy compat
+  clientId?: string;
+  client?: Client;
+  paymentTerms?: string;
+  footerText?: string;
+  bilingualLabels?: boolean;
 }
 
 export interface InvoiceSettings {
-  prefix: string; // e.g. "INV"
+  prefix: string;
   yearInNumber: boolean;
   nextNumber: number;
 }

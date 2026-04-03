@@ -1,27 +1,20 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
-import { Invoice, LineItem, Client, calcLineItemSubtotal, calcInvoiceTotals, Currency, DiscountType, InvoiceStatus } from '@/types/invoice';
-import { formatCurrency, generateInvoiceNumber, todayISO, addDays } from '@/lib/formatters';
+import { Invoice, LineItem, calcLineItemSubtotal, calcInvoiceTotals, DiscountType } from '@/types/invoice';
+import { formatCurrency, generateInvoiceNumber, todayISO, addDays, buildWhatsAppNotaMessage, openWhatsApp } from '@/lib/formatters';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Trash2, Save, Download, Printer, GripVertical, MessageCircle } from 'lucide-react';
-import { getStatusLabel, getStatusColor } from '@/lib/formatters';
+import { Plus, Minus, Trash2, Save, MessageCircle, ChevronDown, ChevronUp, ShoppingBag } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InvoicePreview from '@/components/InvoicePreview';
 
 interface InvoiceFormProps {
   editId?: string | null;
   onNavigate: (page: string) => void;
 }
-
-const UNITS = ['pcs', 'kg', 'pack', 'box', 'unit', 'jam', 'hari', 'bulan'];
 
 function newLineItem(): LineItem {
   return { id: crypto.randomUUID(), description: '', quantity: 1, unit: 'pcs', unitPrice: 0, discountType: 'fixed', discountValue: 0 };
@@ -30,108 +23,98 @@ function newLineItem(): LineItem {
 export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
   const { toast } = useToast();
   const store = useInvoiceStore();
-  const { clients, profile, catalog, settings, addInvoice, updateInvoice } = store;
+  const { profile, catalog, settings, addInvoice, updateInvoice } = store;
 
   const existing = editId ? store.invoices.find(i => i.id === editId) : null;
 
-  const [invoiceNumber, setInvoiceNumber] = useState(existing?.invoiceNumber || generateInvoiceNumber(settings.invoiceSettings.prefix, settings.invoiceSettings.yearInNumber, settings.invoiceSettings.nextNumber));
-  const [status, setStatus] = useState<InvoiceStatus>(existing?.status || 'draft');
-  const [currency, setCurrency] = useState<Currency>(existing?.currency || 'IDR');
-  const [invoiceDate, setInvoiceDate] = useState(existing?.invoiceDate || todayISO());
-  const [dueDate, setDueDate] = useState(existing?.dueDate || addDays(todayISO(), 30));
-  const [paymentTerms, setPaymentTerms] = useState(existing?.paymentTerms || '');
+  const [buyerName, setBuyerName] = useState(existing?.buyerName || existing?.client?.name || '');
+  const [buyerPhone, setBuyerPhone] = useState(existing?.buyerPhone || existing?.client?.phone || '');
+  const [lineItems, setLineItems] = useState<LineItem[]>(existing?.lineItems || []);
   const [notes, setNotes] = useState(existing?.notes || '');
-  const [footerText, setFooterText] = useState(existing?.footerText || 'Terima kasih atas kepercayaan Anda.');
-  const [bilingualLabels, setBilingualLabels] = useState(existing?.bilingualLabels ?? true);
-
-  const [selectedClientId, setSelectedClientId] = useState(existing?.clientId || '');
-  const [clientForm, setClientForm] = useState<Client>(existing?.client || { id: '', name: '', company: '', address: '', phone: '', email: '' });
-  const [showNewClient, setShowNewClient] = useState(false);
-
-  const [lineItems, setLineItems] = useState<LineItem[]>(existing?.lineItems || [newLineItem()]);
   const [additionalDiscountType, setAdditionalDiscountType] = useState<DiscountType>(existing?.additionalDiscountType || 'fixed');
   const [additionalDiscountValue, setAdditionalDiscountValue] = useState(existing?.additionalDiscountValue || 0);
-  const [taxType, setTaxType] = useState<'ppn11' | 'custom' | 'none'>(existing?.taxType || 'ppn11');
+  const [taxType, setTaxType] = useState<'ppn11' | 'custom' | 'none'>(existing?.taxType || 'none');
   const [customTaxRate, setCustomTaxRate] = useState(existing?.customTaxRate || 0);
   const [shippingCost, setShippingCost] = useState(existing?.shippingCost || 0);
-  const [paidDate, setPaidDate] = useState(existing?.paidDate || '');
-
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
-  // Select client
-  useEffect(() => {
-    if (selectedClientId && selectedClientId !== '__new__') {
-      const c = clients.find(c => c.id === selectedClientId);
-      if (c) setClientForm(c);
-    }
-  }, [selectedClientId, clients]);
+  // Manual add
+  const [manualDesc, setManualDesc] = useState('');
+  const [manualPrice, setManualPrice] = useState('');
 
-  const updateLineItem = (id: string, field: keyof LineItem, value: any) => {
-    setLineItems(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
-  };
-
-  const removeLineItem = (id: string) => {
-    if (lineItems.length <= 1) return;
-    setLineItems(prev => prev.filter(i => i.id !== id));
-  };
+  const invoiceNumber = existing?.invoiceNumber || generateInvoiceNumber(settings.invoiceSettings.prefix, settings.invoiceSettings.yearInNumber, settings.invoiceSettings.nextNumber);
 
   const addFromCatalog = (catId: string) => {
     const cat = catalog.find(c => c.id === catId);
     if (!cat) return;
-    setLineItems(prev => [...prev, { id: crypto.randomUUID(), description: cat.description, quantity: 1, unit: cat.unit, unitPrice: cat.unitPrice, discountType: 'fixed', discountValue: 0 }]);
-  };
-
-  const buildInvoice = (): Invoice => ({
-    id: existing?.id || crypto.randomUUID(),
-    invoiceNumber, status, currency, invoiceDate, dueDate, paymentTerms, notes,
-    clientId: selectedClientId,
-    client: clientForm,
-    lineItems, additionalDiscountType, additionalDiscountValue,
-    taxType, customTaxRate, shippingCost, paidDate, bilingualLabels, footerText,
-  });
-
-  const handleSave = () => {
-    if (!clientForm.name && !clientForm.company) {
-      toast({ title: 'Error', description: 'Nama klien wajib diisi', variant: 'destructive' });
-      return;
-    }
-    if (lineItems.some(i => !i.description)) {
-      toast({ title: 'Error', description: 'Deskripsi item wajib diisi', variant: 'destructive' });
-      return;
-    }
-
-    // Save new client if needed
-    if (showNewClient && clientForm.name) {
-      const newClient = { ...clientForm, id: crypto.randomUUID() };
-      store.addClient(newClient);
-      setSelectedClientId(newClient.id);
-      setClientForm(newClient);
-    }
-
-    const inv = buildInvoice();
-    if (existing) {
-      updateInvoice(inv);
-      toast({ title: 'Berhasil', description: 'Invoice berhasil diperbarui' });
+    // If already in list, increment qty
+    const existingItem = lineItems.find(i => i.description === cat.description && i.unitPrice === cat.unitPrice);
+    if (existingItem) {
+      setLineItems(prev => prev.map(i => i.id === existingItem.id ? { ...i, quantity: i.quantity + 1 } : i));
     } else {
-      addInvoice(inv);
-      toast({ title: 'Berhasil', description: 'Invoice berhasil disimpan' });
+      setLineItems(prev => [...prev, { id: crypto.randomUUID(), description: cat.description, quantity: 1, unit: cat.unit, unitPrice: cat.unitPrice, discountType: 'fixed', discountValue: 0 }]);
     }
-    onNavigate('history');
   };
 
-  const setDueDatePreset = (days: number) => {
-    setDueDate(addDays(invoiceDate, days));
+  const handleManualAdd = () => {
+    if (!manualDesc || !manualPrice) return;
+    setLineItems(prev => [...prev, { id: crypto.randomUUID(), description: manualDesc, quantity: 1, unit: 'pcs', unitPrice: Number(manualPrice), discountType: 'fixed', discountValue: 0 }]);
+    setManualDesc('');
+    setManualPrice('');
+  };
+
+  const updateQty = (id: string, delta: number) => {
+    setLineItems(prev => prev.map(i => {
+      if (i.id !== id) return i;
+      const newQty = Math.max(0, i.quantity + delta);
+      return { ...i, quantity: newQty };
+    }).filter(i => i.quantity > 0));
+  };
+
+  const removeItem = (id: string) => {
+    setLineItems(prev => prev.filter(i => i.id !== id));
   };
 
   const totals = calcInvoiceTotals({ lineItems, additionalDiscountType, additionalDiscountValue, taxType, customTaxRate, shippingCost });
 
-  const handleWhatsApp = () => {
+  const buildInvoice = (): Invoice => ({
+    id: existing?.id || crypto.randomUUID(),
+    invoiceNumber,
+    status: existing?.status || 'draft',
+    currency: 'IDR',
+    invoiceDate: existing?.invoiceDate || todayISO(),
+    dueDate: existing?.dueDate || addDays(todayISO(), 7),
+    notes,
+    buyerName,
+    buyerPhone,
+    lineItems,
+    additionalDiscountType,
+    additionalDiscountValue,
+    taxType,
+    customTaxRate,
+    shippingCost,
+    paidDate: existing?.paidDate,
+  });
+
+  const handleSave = (sendWA = false) => {
+    if (lineItems.length === 0) {
+      toast({ title: 'Oops', description: 'Tambahkan minimal 1 item', variant: 'destructive' });
+      return;
+    }
     const inv = buildInvoice();
-    const { grandTotal } = calcInvoiceTotals(inv);
-    const msg = encodeURIComponent(
-      `*Invoice ${inv.invoiceNumber}*\nKepada: ${inv.client.name || inv.client.company}\nTotal: ${formatCurrency(grandTotal, inv.currency)}\nJatuh tempo: ${inv.dueDate}\n\nTerima kasih!`
-    );
-    window.open(`https://wa.me/?text=${msg}`, '_blank');
+    if (existing) {
+      updateInvoice(inv);
+      toast({ title: '✅ Tersimpan', description: 'Nota berhasil diperbarui' });
+    } else {
+      addInvoice(inv);
+      toast({ title: '✅ Tersimpan', description: `Nota ${inv.invoiceNumber} berhasil dibuat` });
+    }
+    if (sendWA) {
+      const msg = buildWhatsAppNotaMessage(inv, totals.grandTotal, profile);
+      openWhatsApp(buyerPhone, msg);
+    }
+    onNavigate('history');
   };
 
   if (showPreview) {
@@ -139,271 +122,184 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
   }
 
   return (
-    <div className="space-y-4 md:space-y-6 max-w-4xl">
-      <div className="space-y-3">
-        <h1 className="text-xl md:text-2xl font-bold text-foreground">{existing ? 'Edit Invoice' : 'Buat Invoice Baru'}</h1>
-        <div className="flex gap-2 flex-wrap">
-          <Button variant="outline" size="sm" onClick={() => setShowPreview(true)}>
-            <Printer className="mr-1.5 h-4 w-4" /> Preview
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleWhatsApp}>
-            <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
-          </Button>
-          <Button size="sm" onClick={handleSave}>
-            <Save className="mr-1.5 h-4 w-4" /> Simpan
-          </Button>
+    <div className="space-y-4 max-w-lg mx-auto">
+      <h1 className="text-lg font-bold text-foreground">{existing ? 'Edit Nota' : 'Nota Baru'}</h1>
+
+      {/* Buyer info — minimal */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1">
+          <Label className="text-xs text-muted-foreground">Nama Pembeli (opsional)</Label>
+          <Input value={buyerName} onChange={e => setBuyerName(e.target.value)} placeholder="Pak Budi..." className="h-10" />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs text-muted-foreground">No. HP (opsional)</Label>
+          <Input value={buyerPhone} onChange={e => setBuyerPhone(e.target.value)} placeholder="08xx..." className="h-10" />
         </div>
       </div>
 
-      {/* Invoice Details */}
-      <Card>
-        <CardHeader><CardTitle>Detail Invoice</CardTitle></CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="space-y-2">
-            <Label>Nomor Invoice</Label>
-            <Input value={invoiceNumber} onChange={e => setInvoiceNumber(e.target.value)} />
+      {/* Quick-add catalog grid */}
+      {catalog.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground flex items-center gap-1"><ShoppingBag className="h-3 w-3" /> Tap untuk tambah:</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {catalog.map(cat => {
+              const inCart = lineItems.find(i => i.description === cat.description && i.unitPrice === cat.unitPrice);
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => addFromCatalog(cat.id)}
+                  className={`relative rounded-xl border-2 p-3 text-left transition-all active:scale-95 ${
+                    inCart
+                      ? 'border-primary bg-primary/5 shadow-sm'
+                      : 'border-border hover:border-primary/50 bg-card'
+                  }`}
+                >
+                  <p className="text-sm font-medium truncate">{cat.description}</p>
+                  <p className="text-xs text-muted-foreground">{formatCurrency(cat.unitPrice)}</p>
+                  {inCart && (
+                    <span className="absolute -top-2 -right-2 flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow">
+                      {inCart.quantity}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
-          <div className="space-y-2">
-            <Label>Status</Label>
-            <Select value={status} onValueChange={v => setStatus(v as InvoiceStatus)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {(['draft', 'sent', 'paid', 'overdue', 'cancelled'] as InvoiceStatus[]).map(s => (
-                  <SelectItem key={s} value={s}>{getStatusLabel(s)}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Mata Uang</Label>
-            <Select value={currency} onValueChange={v => setCurrency(v as Currency)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="IDR">IDR (Rupiah)</SelectItem>
-                <SelectItem value="USD">USD (Dollar)</SelectItem>
-                <SelectItem value="SGD">SGD (Singapore)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Tanggal Invoice</Label>
-            <Input type="date" value={invoiceDate} onChange={e => setInvoiceDate(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>Tanggal Jatuh Tempo</Label>
-            <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
-            <div className="flex gap-1 flex-wrap">
-              {[7, 14, 30, 60].map(d => (
-                <Button key={d} variant="outline" size="sm" className="text-xs h-6" onClick={() => setDueDatePreset(d)}>
-                  {d} hari
+        </div>
+      )}
+
+      {/* Manual add row */}
+      <div className="flex gap-2 items-end">
+        <div className="flex-1 space-y-1">
+          <Label className="text-xs text-muted-foreground">Item manual</Label>
+          <Input value={manualDesc} onChange={e => setManualDesc(e.target.value)} placeholder="Nama item..." className="h-10" />
+        </div>
+        <div className="w-24 space-y-1">
+          <Label className="text-xs text-muted-foreground">Harga</Label>
+          <Input type="number" value={manualPrice} onChange={e => setManualPrice(e.target.value)} placeholder="0" className="h-10" />
+        </div>
+        <Button size="icon" className="h-10 w-10 shrink-0" onClick={handleManualAdd} disabled={!manualDesc || !manualPrice}>
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Line items list */}
+      {lineItems.length > 0 && (
+        <div className="space-y-2 rounded-xl border bg-card p-3">
+          {lineItems.map(item => (
+            <div key={item.id} className="flex items-center gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{item.description}</p>
+                <p className="text-xs text-muted-foreground">{formatCurrency(item.unitPrice)} × {item.quantity} = {formatCurrency(calcLineItemSubtotal(item))}</p>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQty(item.id, -1)}>
+                  <Minus className="h-3 w-3" />
                 </Button>
-              ))}
-            </div>
-          </div>
-          {status === 'paid' && (
-            <div className="space-y-2">
-              <Label>Tanggal Pembayaran</Label>
-              <Input type="date" value={paidDate} onChange={e => setPaidDate(e.target.value)} />
-            </div>
-          )}
-          <div className="space-y-2 sm:col-span-2 lg:col-span-3">
-            <Label>Syarat Pembayaran</Label>
-            <Input value={paymentTerms} onChange={e => setPaymentTerms(e.target.value)} placeholder="e.g. Transfer ke rekening di bawah" />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Client */}
-      <Card>
-        <CardHeader><CardTitle>Klien</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-2 items-end">
-            <div className="flex-1 space-y-2">
-              <Label>Pilih Klien</Label>
-              <Select value={selectedClientId} onValueChange={v => { setSelectedClientId(v); setShowNewClient(v === '__new__'); }}>
-                <SelectTrigger><SelectValue placeholder="Pilih klien..." /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__new__">+ Tambah Klien Baru</SelectItem>
-                  {clients.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.name || c.company}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          {(showNewClient || selectedClientId) && (
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Nama</Label>
-                <Input value={clientForm.name} onChange={e => setClientForm(p => ({ ...p, name: e.target.value }))} />
-              </div>
-              <div className="space-y-2">
-                <Label>Perusahaan</Label>
-                <Input value={clientForm.company} onChange={e => setClientForm(p => ({ ...p, company: e.target.value }))} />
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label>Alamat</Label>
-                <Textarea value={clientForm.address} onChange={e => setClientForm(p => ({ ...p, address: e.target.value }))} rows={2} />
-              </div>
-              <div className="space-y-2">
-                <Label>Telepon</Label>
-                <Input value={clientForm.phone} onChange={e => setClientForm(p => ({ ...p, phone: e.target.value }))} />
-              </div>
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input value={clientForm.email} onChange={e => setClientForm(p => ({ ...p, email: e.target.value }))} />
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Line Items */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Item</CardTitle>
-            <div className="flex gap-2">
-              {catalog.length > 0 && (
-                <Select onValueChange={addFromCatalog}>
-                  <SelectTrigger className="w-[160px] h-8 text-xs"><SelectValue placeholder="Dari katalog..." /></SelectTrigger>
-                  <SelectContent>
-                    {catalog.map(c => (
-                      <SelectItem key={c.id} value={c.id}>{c.description}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              <Button variant="outline" size="sm" onClick={() => setLineItems(prev => [...prev, newLineItem()])}>
-                <Plus className="mr-1 h-3 w-3" /> Tambah Item
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {lineItems.map((item, idx) => (
-            <div key={item.id} className="grid gap-2 rounded-lg border p-3 grid-cols-12 items-end">
-              <div className="col-span-12 sm:col-span-4 space-y-1">
-                <Label className="text-xs">Deskripsi</Label>
-                <Input value={item.description} onChange={e => updateLineItem(item.id, 'description', e.target.value)} placeholder="Nama item/jasa..." />
-              </div>
-              <div className="col-span-4 sm:col-span-1 space-y-1">
-                <Label className="text-xs">Qty</Label>
-                <Input type="number" min={0} value={item.quantity} onChange={e => updateLineItem(item.id, 'quantity', Number(e.target.value))} />
-              </div>
-              <div className="col-span-4 sm:col-span-1 space-y-1">
-                <Label className="text-xs">Satuan</Label>
-                <Select value={item.unit} onValueChange={v => updateLineItem(item.id, 'unit', v)}>
-                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {UNITS.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="col-span-4 sm:col-span-2 space-y-1">
-                <Label className="text-xs">Harga Satuan</Label>
-                <Input type="number" min={0} value={item.unitPrice} onChange={e => updateLineItem(item.id, 'unitPrice', Number(e.target.value))} />
-              </div>
-              <div className="col-span-5 sm:col-span-2 space-y-1">
-                <Label className="text-xs">Diskon</Label>
-                <div className="flex gap-1">
-                  <Select value={item.discountType} onValueChange={v => updateLineItem(item.id, 'discountType', v)}>
-                    <SelectTrigger className="h-9 w-14"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="fixed">Rp</SelectItem>
-                      <SelectItem value="percentage">%</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Input type="number" min={0} value={item.discountValue} onChange={e => updateLineItem(item.id, 'discountValue', Number(e.target.value))} className="h-9" />
-                </div>
-              </div>
-              <div className="col-span-5 sm:col-span-1 space-y-1">
-                <Label className="text-xs">Subtotal</Label>
-                <p className="text-sm font-semibold py-2">{formatCurrency(calcLineItemSubtotal(item), currency)}</p>
-              </div>
-              <div className="col-span-2 sm:col-span-1 flex justify-end">
-                <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive" onClick={() => removeLineItem(item.id)} disabled={lineItems.length <= 1}>
-                  <Trash2 className="h-4 w-4" />
+                <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQty(item.id, 1)}>
+                  <Plus className="h-3 w-3" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeItem(item.id)}>
+                  <Trash2 className="h-3 w-3" />
                 </Button>
               </div>
             </div>
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      )}
 
-      {/* Pricing */}
-      <Card>
-        <CardHeader><CardTitle>Ringkasan Harga</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="space-y-2">
-              <Label>Diskon Tambahan</Label>
-              <div className="flex gap-2">
+      {/* Advanced options (collapsed) */}
+      <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
+        <CollapsibleTrigger asChild>
+          <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors w-full py-2">
+            {showAdvanced ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            Opsi lanjutan (diskon, pajak, ongkir, catatan)
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-3 pt-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">Diskon</Label>
+              <div className="flex gap-1">
                 <Select value={additionalDiscountType} onValueChange={v => setAdditionalDiscountType(v as DiscountType)}>
-                  <SelectTrigger className="w-20"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="w-16 h-9"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="fixed">Rp</SelectItem>
                     <SelectItem value="percentage">%</SelectItem>
                   </SelectContent>
                 </Select>
-                <Input type="number" min={0} value={additionalDiscountValue} onChange={e => setAdditionalDiscountValue(Number(e.target.value))} />
+                <Input type="number" min={0} value={additionalDiscountValue} onChange={e => setAdditionalDiscountValue(Number(e.target.value))} className="h-9" />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Pajak</Label>
+            <div className="space-y-1">
+              <Label className="text-xs">Pajak</Label>
               <Select value={taxType} onValueChange={v => setTaxType(v as any)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">Tanpa Pajak</SelectItem>
                   <SelectItem value="ppn11">PPN 11%</SelectItem>
                   <SelectItem value="custom">Custom</SelectItem>
-                  <SelectItem value="none">Tanpa Pajak</SelectItem>
                 </SelectContent>
               </Select>
               {taxType === 'custom' && (
-                <Input type="number" min={0} max={100} value={customTaxRate} onChange={e => setCustomTaxRate(Number(e.target.value))} placeholder="Rate %" />
+                <Input type="number" min={0} max={100} value={customTaxRate} onChange={e => setCustomTaxRate(Number(e.target.value))} placeholder="%" className="h-9 mt-1" />
               )}
             </div>
-            <div className="space-y-2">
-              <Label>Biaya Pengiriman</Label>
-              <Input type="number" min={0} value={shippingCost} onChange={e => setShippingCost(Number(e.target.value))} />
-            </div>
           </div>
-          <Separator />
-          <div className="space-y-2 text-right">
-            <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatCurrency(totals.subtotal, currency)}</span></div>
-            {totals.additionalDiscount > 0 && (
-              <div className="flex justify-between"><span className="text-muted-foreground">Diskon</span><span>-{formatCurrency(totals.additionalDiscount, currency)}</span></div>
-            )}
-            {totals.taxRate > 0 && (
-              <div className="flex justify-between"><span className="text-muted-foreground">Pajak ({totals.taxRate}%)</span><span>{formatCurrency(totals.taxAmount, currency)}</span></div>
-            )}
-            {shippingCost > 0 && (
-              <div className="flex justify-between"><span className="text-muted-foreground">Pengiriman</span><span>{formatCurrency(shippingCost, currency)}</span></div>
-            )}
-            <Separator />
-            <div className="flex justify-between text-lg font-bold"><span>Grand Total</span><span>{formatCurrency(totals.grandTotal, currency)}</span></div>
+          <div className="space-y-1">
+            <Label className="text-xs">Ongkos Kirim</Label>
+            <Input type="number" min={0} value={shippingCost} onChange={e => setShippingCost(Number(e.target.value))} className="h-9" />
           </div>
-        </CardContent>
-      </Card>
+          <div className="space-y-1">
+            <Label className="text-xs">Catatan</Label>
+            <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Catatan tambahan..." className="h-9" />
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
 
-      {/* Notes */}
-      <Card>
-        <CardHeader><CardTitle>Catatan & Pengaturan</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Catatan / Syarat & Ketentuan</Label>
-            <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Catatan tambahan..." />
+      {/* Sticky total bar */}
+      <div className="sticky bottom-20 z-30 rounded-2xl border bg-card/95 backdrop-blur-lg shadow-xl p-4 space-y-3">
+        {/* Summary */}
+        <div className="space-y-1 text-sm">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Subtotal ({lineItems.length} item)</span>
+            <span>{formatCurrency(totals.subtotal)}</span>
           </div>
-          <div className="space-y-2">
-            <Label>Teks Footer</Label>
-            <Input value={footerText} onChange={e => setFooterText(e.target.value)} />
+          {totals.additionalDiscount > 0 && (
+            <div className="flex justify-between text-green-600">
+              <span>Diskon</span>
+              <span>-{formatCurrency(totals.additionalDiscount)}</span>
+            </div>
+          )}
+          {totals.taxRate > 0 && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Pajak ({totals.taxRate}%)</span>
+              <span>{formatCurrency(totals.taxAmount)}</span>
+            </div>
+          )}
+          {shippingCost > 0 && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Ongkir</span>
+              <span>{formatCurrency(shippingCost)}</span>
+            </div>
+          )}
+          <div className="flex justify-between text-lg font-bold pt-1 border-t border-border">
+            <span>Total</span>
+            <span>{formatCurrency(totals.grandTotal)}</span>
           </div>
-          <div className="flex items-center gap-3">
-            <Switch checked={bilingualLabels} onCheckedChange={setBilingualLabels} />
-            <Label>Label bilingual (Indonesia + Inggris)</Label>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Action buttons */}
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="outline" className="h-12 text-sm font-semibold" onClick={() => handleSave(false)}>
+            <Save className="mr-1.5 h-4 w-4" /> Simpan
+          </Button>
+          <Button className="h-12 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white" onClick={() => handleSave(true)}>
+            <MessageCircle className="mr-1.5 h-4 w-4" /> Simpan & WA
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

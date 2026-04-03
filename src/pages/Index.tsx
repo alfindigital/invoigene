@@ -11,9 +11,9 @@ import logoImg from '@/assets/logo.png';
 
 const pageTitles: Record<string, string> = {
   dashboard: 'Dashboard',
-  new: 'Buat Invoice',
-  edit: 'Edit Invoice',
-  preview: 'Preview Invoice',
+  new: 'Nota Baru',
+  edit: 'Edit Nota',
+  preview: 'Preview Nota',
   history: 'Riwayat',
   settings: 'Pengaturan',
 };
@@ -50,43 +50,26 @@ const Index = () => {
     }, 150);
   };
 
-  const handleEdit = (id: string) => {
-    setEditId(id);
-    navigate('edit');
-  };
-
-  const handlePreview = (id: string) => {
-    setPreviewId(id);
-    navigate('preview');
-  };
+  const handleEdit = (id: string) => { setEditId(id); navigate('edit'); };
+  const handlePreview = (id: string) => { setPreviewId(id); navigate('preview'); };
 
   const renderPage = () => {
     const previewInvoice = previewId ? invoices.find(i => i.id === previewId) : null;
     switch (page) {
-      case 'dashboard':
-        return <Dashboard onNavigate={navigate} />;
-      case 'new':
-        return <InvoiceForm onNavigate={navigate} />;
-      case 'edit':
-        return <InvoiceForm editId={editId} onNavigate={navigate} />;
-      case 'preview':
-        return previewInvoice ? (
-          <InvoicePreview invoice={previewInvoice} profile={profile} onBack={() => navigate('history')} />
-        ) : (
-          <InvoiceHistory onNavigate={navigate} onEdit={handleEdit} onPreview={handlePreview} />
-        );
-      case 'history':
-        return <InvoiceHistory onNavigate={navigate} onEdit={handleEdit} onPreview={handlePreview} />;
-      case 'settings':
-        return <Settings />;
-      default:
-        return <Dashboard onNavigate={navigate} />;
+      case 'dashboard': return <Dashboard onNavigate={navigate} />;
+      case 'new': return <InvoiceForm onNavigate={navigate} />;
+      case 'edit': return <InvoiceForm editId={editId} onNavigate={navigate} />;
+      case 'preview': return previewInvoice
+        ? <InvoicePreview invoice={previewInvoice} profile={profile} onBack={() => navigate('history')} />
+        : <InvoiceHistory onNavigate={navigate} onEdit={handleEdit} onPreview={handlePreview} />;
+      case 'history': return <InvoiceHistory onNavigate={navigate} onEdit={handleEdit} onPreview={handlePreview} />;
+      case 'settings': return <Settings />;
+      default: return <Dashboard onNavigate={navigate} />;
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col app-bg-pattern">
-      {/* Top bar — dark blue branded */}
       <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-5 bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-foreground))] shadow-sm">
         <div className="flex items-center gap-2.5">
           <img src={logoImg} alt="Logo" width={32} height={32} className="rounded-lg" />
@@ -102,20 +85,12 @@ const Index = () => {
         </button>
       </header>
 
-      {/* Content */}
       <main className="flex-1 px-4 md:px-8 lg:px-12 py-5 pb-24 overflow-auto max-w-5xl mx-auto w-full">
-        <div
-          className={`transition-all duration-200 ease-out ${
-            isTransitioning
-              ? 'opacity-0 translate-y-3 scale-[0.98]'
-              : 'opacity-100 translate-y-0 scale-100'
-          }`}
-        >
+        <div className={`transition-all duration-200 ease-out ${isTransitioning ? 'opacity-0 translate-y-3 scale-[0.98]' : 'opacity-100 translate-y-0 scale-100'}`}>
           {renderPage()}
         </div>
       </main>
 
-      {/* Bottom navigation */}
       <BottomNav activePage={page} onNavigate={navigate} />
     </div>
   );
