@@ -1,78 +1,73 @@
 
 
-# Invoice Generator Mini App — Implementation Plan
+# Rombak Konsep: Nota Digital untuk UMKM & Pedagang Kaki Lima
 
-## Overview
-A fully functional, client-side Invoice Generator app in Bahasa Indonesia with bilingual invoice output, PDF export, and localStorage persistence. Professional, clean UI with dark mode support.
+## Masalah Sekarang
+Form invoice terlalu rumit untuk pedagang kecil: ada manajemen klien, multi-currency, PPN, diskon per-item, bilingual labels, dll. Pedagang kaki lima butuh input cepat — ketik nama pembeli (opsional), tambah item, langsung cetak/kirim.
 
-## Navigation Structure
-Sidebar/tab navigation with 4 sections:
-- **Dashboard** — Summary cards (total invoices, revenue, outstanding, overdue) + recent invoices
-- **Buat Invoice** (New Invoice) — Full invoice creation form
-- **Riwayat Invoice** (Invoice History) — Searchable/filterable list of all invoices
-- **Pengaturan** (Settings) — Business profile, logo upload, bank details, invoice prefix config
+## Konsep Baru
 
-## Core Pages & Features
+### Filosofi: "3 Ketukan = Nota Jadi"
+- Tidak ada konsep "klien" yang disimpan — cukup ketik nama pembeli (opsional)
+- Item dari katalog bisa ditambah dengan 1 tap
+- Default currency IDR only, pajak default none
+- Form 1 halaman, scroll minimal
 
-### Dashboard
-- Summary cards: total invoices, total revenue (by currency), outstanding amount, overdue count
-- Quick-action buttons: New Invoice, View History
-- Recent 5 invoices with status badges
+### Perubahan per Halaman
 
-### Invoice Form (Buat Invoice)
-- **Sender**: Auto-filled from saved business profile
-- **Client**: Dropdown to select saved client or "Tambah Klien Baru" with inline form
-- **Invoice details**: Auto-generated number (customizable prefix, auto-increment), dates, due date presets (7/14/30/60 hari), payment terms, notes
-- **Line items**: Add/remove/reorder rows with description, qty, unit (pcs/kg/pack/box/custom), unit price, discount (% or fixed), auto-calculated line subtotal
-- **Item catalog**: Quick-add from saved items
-- **Pricing summary**: Subtotal → additional discount → tax (PPN 11% / custom / none) → shipping → Grand Total
-- **Currency selector**: IDR (default), USD, SGD with proper locale formatting
-- **Status**: Draft/Sent/Paid/Overdue/Cancelled with badge
-- **Actions**: Save, Preview PDF, Download PDF, Print, WhatsApp share, Duplicate
+**1. Halaman "Buat Nota" (rombak total InvoiceForm)**
+- Layout baru: 1 halaman simpel, bukan banyak Card terpisah
+- Bagian atas: Nama Pembeli (1 input, opsional) + No. HP (opsional, untuk WhatsApp)
+- Nomor nota auto-generate, tanggal auto hari ini
+- **Quick-add items**: Grid tombol dari katalog (tap = langsung masuk, tap lagi = tambah qty). Mirip POS/kasir
+- Manual add: input nama item + harga + qty dalam 1 baris compact
+- Ringkasan total real-time di bagian bawah (sticky)
+- Tombol besar: "Simpan & Kirim WA" dan "Simpan"
+- Diskon & pajak tersembunyi di balik toggle "Opsi lanjutan" (collapsed by default)
 
-### Invoice History (Riwayat Invoice)
-- Table/list of all invoices with: number, client, date, amount, status badge
-- Search by client name or invoice number
-- Filter by status and date range
-- Actions per invoice: View, Edit, Duplicate, Delete (with confirmation dialog)
-- Mark as Paid with payment date
+**2. Dashboard (simplifikasi)**
+- Stat cards: Total Nota Hari Ini, Pendapatan Hari Ini, Total Bulan Ini, Belum Dibayar
+- Fokus pada ringkasan harian, bukan bulanan
+- Tombol besar "Buat Nota Baru"
+- Daftar 5 nota terakhir (tetap)
 
-### Settings (Pengaturan)
-- Business profile form: company name, logo (base64 in localStorage), address, phone, email, Tax ID/NPWP
-- Bank account details: bank name, account number, account holder
-- Invoice number prefix format configuration
-- Item catalog management (add/edit/delete frequently used items)
-- Client management (edit/delete saved clients)
+**3. Riwayat (minor update)**
+- Ganti label "Klien" → "Pembeli"
+- Tetap ada search, filter, sort
 
-## PDF Output
-Using jsPDF + html2canvas for professional A4 PDF:
-- Header: Logo (left) + company info (right)
-- Invoice number, dates, status
-- Bill To: client details
-- Line items table: No, Description, Qty, Unit, Unit Price, Discount, Amount
-- Summary: Subtotal, Discount, Tax, Shipping, **Grand Total**
-- Bank/payment details section
-- Notes/terms section
-- Footer with custom text
-- QR code with payment details
+**4. Pengaturan (simplifikasi)**
+- Profil Usaha: Nama Usaha, Alamat, No HP, Logo — tanpa field email/NPWP/bank (pindah ke "Opsi Lanjutan")
+- Katalog Produk jadi fitur utama — karena pedagang jual barang yang sama terus
+- Hapus manajemen klien dari settings
 
-## Data & Storage
-- All data in localStorage: business profile, clients, invoices, item catalog, settings
-- Custom hooks for CRUD operations on each entity
+**5. Tipe Data (types/invoice.ts)**
+- Field `client` disederhanakan: hanya `buyerName` (string) dan `buyerPhone` (string) langsung di Invoice, hapus Client interface dari invoice
+- Hapus field: `bilingualLabels`, `paymentTerms`, `footerText` dari required (jadikan opsional di "Opsi Lanjutan")
+- Default `taxType` = `'none'`, default `currency` = `'IDR'`
+- Pertahankan Client type untuk backward compat tapi tidak wajib
 
-## UI/UX
-- Clean, white, professional design using shadcn/ui components
-- Dark mode toggle
-- Responsive (desktop + mobile)
-- Toast notifications for all actions
-- Form validation with error highlighting
-- Indonesian language UI with bilingual invoice output option
-- Indonesian number formatting for IDR (Rp 1.500.000)
+**6. Invoice Preview (update)**
+- Layout lebih simpel, cocok untuk struk/nota kecil
+- Nama pembeli di atas, bukan "Bill To" formal
+- Hapus section bank details kecuali diisi di settings
 
-## Bonus Features
-- WhatsApp share button with invoice summary message
-- Duplicate invoice with auto-incremented number and new dates
-- Multi-currency manual conversion rate input
-- QR code on invoice (payment details)
-- Item catalog for quick line item entry
+### Perubahan Teknis
+- **`types/invoice.ts`**: Tambah `buyerName`, `buyerPhone` ke Invoice. Client jadi opsional
+- **`InvoiceForm.tsx`**: Rombak total — form 1 halaman, quick-add grid, sticky total bar
+- **`Dashboard.tsx`**: Update stats ke fokus harian, update dummy data ke konteks pedagang (es teh, nasi goreng, dll)
+- **`Settings.tsx`**: Reorder — katalog di atas, profil ringkas, opsi lanjutan collapsed
+- **`InvoiceHistory.tsx`**: Update label "Klien" → "Pembeli"
+- **`InvoicePreview.tsx`**: Layout nota simpel
+- **`useInvoiceStore.ts`**: Tetap sama, minor adjustments
+- **`BottomNav.tsx`**: Ganti "Buat" → "Nota Baru" dengan ikon lebih menonjol
+
+### Contoh Flow Pedagang
+1. Buka app → tap "Nota Baru"
+2. (Opsional) ketik "Pak Budi" di nama pembeli
+3. Tap "Nasi Goreng" dari grid katalog → qty 2
+4. Tap "Es Teh" → qty 3
+5. Lihat total di bawah: Rp 55.000
+6. Tap "Simpan & Kirim WA" → selesai
+
+Total waktu: ~10 detik vs sebelumnya ~2 menit.
 
