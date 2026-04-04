@@ -159,8 +159,18 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
         <div className="space-y-2">
           <p className="text-xs font-medium text-muted-foreground flex items-center gap-1"><ShoppingBag className="h-3 w-3" /> Tap untuk tambah:</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {catalog.map(cat => {
+            {[...catalog]
+              .sort((a, b) => {
+                const aTop = bestsellerIds.indexOf(a.id);
+                const bTop = bestsellerIds.indexOf(b.id);
+                if (aTop !== -1 && bTop !== -1) return aTop - bTop;
+                if (aTop !== -1) return -1;
+                if (bTop !== -1) return 1;
+                return 0;
+              })
+              .map(cat => {
               const inCart = lineItems.find(i => i.description === cat.description && i.unitPrice === cat.unitPrice);
+              const isBestseller = bestsellerIds.includes(cat.id);
               return (
                 <button
                   key={cat.id}
@@ -168,9 +178,16 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
                   className={`relative rounded-xl border-2 p-3 text-left transition-all active:scale-95 ${
                     inCart
                       ? 'border-primary bg-primary/5 shadow-sm'
-                      : 'border-border hover:border-primary/50 bg-card'
+                      : isBestseller
+                        ? 'border-orange-400/70 bg-orange-50/50 dark:bg-orange-950/20 hover:border-orange-400'
+                        : 'border-border hover:border-primary/50 bg-card'
                   }`}
                 >
+                  {isBestseller && (
+                    <span className="absolute -top-1.5 -left-1.5 flex items-center justify-center h-5 w-5 rounded-full bg-orange-500 text-white shadow">
+                      <Flame className="h-3 w-3" />
+                    </span>
+                  )}
                   <p className="text-sm font-medium truncate">{cat.description}</p>
                   <p className="text-xs text-muted-foreground">{formatCurrency(cat.unitPrice)}</p>
                   {inCart && (
