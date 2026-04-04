@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { Invoice, LineItem, calcLineItemSubtotal, calcInvoiceTotals, DiscountType } from '@/types/invoice';
 import { formatCurrency, generateInvoiceNumber, todayISO, addDays, buildWhatsAppNotaMessage, openWhatsApp } from '@/lib/formatters';
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Minus, Trash2, Save, MessageCircle, ChevronDown, ChevronUp, ShoppingBag } from 'lucide-react';
+import { Plus, Minus, Trash2, Save, MessageCircle, ChevronDown, ChevronUp, ShoppingBag, Flame } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InvoicePreview from '@/components/InvoicePreview';
