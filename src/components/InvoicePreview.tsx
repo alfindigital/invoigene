@@ -1,11 +1,13 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Invoice, BusinessProfile, calcLineItemSubtotal, calcInvoiceTotals } from '@/types/invoice';
 import { formatCurrency, formatDate, getBuyerDisplay, buildWhatsAppNotaMessage, openWhatsApp } from '@/lib/formatters';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Download, Printer, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Download, Printer, MessageCircle, Receipt } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import ThermalReceipt, { type PaperWidth } from './ThermalReceipt';
 
 interface InvoicePreviewProps {
   invoice: Invoice;
@@ -15,8 +17,12 @@ interface InvoicePreviewProps {
 
 export default function InvoicePreview({ invoice, profile, onBack }: InvoicePreviewProps) {
   const printRef = useRef<HTMLDivElement>(null);
+  const thermalRef = useRef<HTMLDivElement>(null);
   const totals = calcInvoiceTotals(invoice);
   const buyer = getBuyerDisplay(invoice);
+
+  const [thermalOpen, setThermalOpen] = useState(false);
+  const [paperWidth, setPaperWidth] = useState<PaperWidth>('58mm');
 
   const handleDownloadPdf = async () => {
     if (!printRef.current) return;
@@ -29,6 +35,55 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
     pdf.save(`${invoice.invoiceNumber}.pdf`);
   };
 
+  const handleThermalPrint = () => {
+    if (!thermalRef.current) return;
+    const printContent = thermalRef.current.innerHTML;
+    const widthMm = paperWidth === '58mm' ? 58 : 80;
+    const printWindow = window.open('', '_blank', `width=400,height=600`);
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Struk ${invoice.invoiceNumber}</title>
+        <style>
+          @page {
+            size: ${widthMm}mm auto;
+            margin: 0;
+          }
+          body {
+            margin: 0;
+            padding: 0;
+            background: #fff;
+          }
+          @media print {
+            body { margin: 0; padding: 0; }
+          }
+        </style>
+      </head>
+      <body>${printContent}</body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      setTimeout(() => printWindow.close(), 1000);
+    };
+  };
+
+  const handleThermalPdf = async () => {
+    if (!thermalRef.current) return;
+    const canvas = await html2canvas(thermalRef.current, { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
+    const imgData = canvas.toDataURL('image/png');
+    const widthMm = paperWidth === '58mm' ? 58 : 80;
+    const pdf = new jsPDF('p', 'mm', [widthMm, (canvas.height * widthMm) / canvas.width]);
+    const pdfW = pdf.internal.pageSize.getWidth();
+    const pdfH = (canvas.height * pdfW) / canvas.width;
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
+    pdf.save(`struk-${invoice.invoiceNumber}.pdf`);
+  };
+
   const qrData = profile.bankName
     ? `Bank: ${profile.bankName}\nRek: ${profile.bankAccountNumber}\nA/N: ${profile.bankAccountHolder}\nTotal: ${formatCurrency(totals.grandTotal)}`
     : `Nota: ${invoice.invoiceNumber}\nTotal: ${formatCurrency(totals.grandTotal)}`;
@@ -38,6 +93,9 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
       <div className="flex flex-wrap items-center gap-2 print:hidden">
         <Button variant="outline" size="sm" onClick={onBack}><ArrowLeft className="mr-1.5 h-4 w-4" /> Kembali</Button>
         <Button variant="outline" size="sm" onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" /> Cetak</Button>
+        <Button variant="outline" size="sm" onClick={() => setThermalOpen(true)} className="text-orange-600 border-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950">
+          <Receipt className="mr-1.5 h-4 w-4" /> Struk
+        </Button>
         <Button size="sm" onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4" /> PDF</Button>
         <Button size="sm" variant="outline" className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950" onClick={() => {
           const msg = buildWhatsAppNotaMessage(invoice, totals.grandTotal, profile);
@@ -47,8 +105,8 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
         </Button>
       </div>
 
+      {/* Standard A4 preview */}
       <div ref={printRef} className="bg-white text-black mx-auto max-w-[210mm] p-4 sm:p-6 shadow-lg print:shadow-none print:p-0" style={{ fontFamily: 'system-ui, sans-serif', fontSize: '12px', lineHeight: '1.5' }}>
-        {/* Header */}
         <div className="flex justify-between items-start gap-4 mb-4">
           <div className="flex items-center gap-3">
             {profile.logo && <img src={profile.logo} alt="Logo" className="h-12 w-12 object-contain" />}
@@ -65,7 +123,6 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
           </div>
         </div>
 
-        {/* Buyer */}
         {buyer !== 'Umum' && (
           <div className="mb-4 text-sm">
             <span className="text-gray-500">Pembeli:</span> <span className="font-medium">{buyer}</span>
@@ -73,7 +130,6 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
           </div>
         )}
 
-        {/* Items */}
         <table className="w-full mb-4" style={{ borderCollapse: 'collapse' }}>
           <thead>
             <tr className="border-b-2 border-gray-800">
@@ -97,7 +153,6 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
           </tbody>
         </table>
 
-        {/* Summary */}
         <div className="flex justify-end mb-4">
           <div className="w-56 space-y-0.5 text-xs">
             <div className="flex justify-between"><span>Subtotal</span><span>{formatCurrency(totals.subtotal)}</span></div>
@@ -117,7 +172,6 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
           </div>
         </div>
 
-        {/* Bank + QR */}
         {profile.bankName && (
           <div className="flex gap-4 items-start mb-4">
             <div className="flex-1 text-xs">
@@ -129,7 +183,6 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
           </div>
         )}
 
-        {/* Notes */}
         {invoice.notes && (
           <p className="text-xs text-gray-500 mb-2">{invoice.notes}</p>
         )}
@@ -138,6 +191,59 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
           Terima kasih atas pembeliannya! 🙏
         </div>
       </div>
+
+      {/* Thermal Receipt Dialog */}
+      <Dialog open={thermalOpen} onOpenChange={setThermalOpen}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Receipt className="h-5 w-5" /> Cetak Struk Thermal
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* Paper width selector */}
+          <div className="flex gap-2 mb-3">
+            {(['58mm', '80mm'] as PaperWidth[]).map(w => (
+              <button
+                key={w}
+                onClick={() => setPaperWidth(w)}
+                className={`flex-1 py-2.5 px-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                  paperWidth === w
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border hover:border-primary/50 bg-card text-muted-foreground'
+                }`}
+              >
+                {w}
+                <span className="block text-[10px] font-normal mt-0.5">
+                  {w === '58mm' ? 'Printer mini' : 'Printer standar'}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Receipt preview */}
+          <div className="flex justify-center bg-muted/50 rounded-xl p-4 overflow-auto">
+            <div className="shadow-lg border border-border/50 bg-white">
+              <ThermalReceipt
+                ref={thermalRef}
+                invoice={invoice}
+                profile={profile}
+                paperWidth={paperWidth}
+              />
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <Button onClick={handleThermalPrint} className="h-11">
+              <Printer className="mr-1.5 h-4 w-4" /> Cetak Struk
+            </Button>
+            <Button variant="outline" onClick={handleThermalPdf} className="h-11">
+              <Download className="mr-1.5 h-4 w-4" /> Simpan PDF
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
