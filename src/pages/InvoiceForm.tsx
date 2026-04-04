@@ -43,6 +43,25 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
 
   const invoiceNumber = existing?.invoiceNumber || generateInvoiceNumber(settings.invoiceSettings.prefix, settings.invoiceSettings.yearInNumber, settings.invoiceSettings.nextNumber);
 
+  // Calculate bestsellers from invoice history
+  const bestsellerIds = useMemo(() => {
+    const freq: Record<string, number> = {};
+    for (const inv of store.invoices) {
+      for (const item of inv.lineItems) {
+        // Match catalog items by description+price
+        const match = catalog.find(c => c.description === item.description && c.unitPrice === item.unitPrice);
+        if (match) {
+          freq[match.id] = (freq[match.id] || 0) + item.quantity;
+        }
+      }
+    }
+    return Object.entries(freq)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .filter(([, count]) => count >= 2)
+      .map(([id]) => id);
+  }, [store.invoices, catalog]);
+
   const addFromCatalog = (catId: string) => {
     const cat = catalog.find(c => c.id === catId);
     if (!cat) return;
