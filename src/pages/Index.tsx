@@ -50,8 +50,8 @@ const Index = () => {
     }, 150);
   };
 
-  const handleEdit = (id: string) => { setEditId(id); navigate('edit'); };
-  const handlePreview = (id: string) => { setPreviewId(id); navigate('preview'); };
+  const handleEdit = (id: string) => { setEditId(id); setPage('edit'); setDisplayedPage('edit'); };
+  const handlePreview = (id: string) => { setPreviewId(id); setPage('preview'); setDisplayedPage('preview'); };
 
   const renderPage = () => {
     const previewInvoice = previewId ? invoices.find(i => i.id === previewId) : null;
