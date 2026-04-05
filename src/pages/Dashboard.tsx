@@ -1,19 +1,29 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { calcInvoiceTotals, Invoice } from '@/types/invoice';
 import { formatCurrency, formatDate, getStatusLabel, getStatusColor, getBuyerDisplay, todayISO } from '@/lib/formatters';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FileText, Plus, Clock, DollarSign, Database } from 'lucide-react';
+import { FileText, Plus, Clock, DollarSign, Database, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 interface DashboardProps {
   onNavigate: (page: string) => void;
 }
 
+type ChartRange = '7d' | '14d' | '30d';
+
+function getDayLabel(dateStr: string): string {
+  const d = new Date(dateStr);
+  const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+  return `${days[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1}`;
+}
+
 export default function Dashboard({ onNavigate }: DashboardProps) {
   const { invoices, addInvoice } = useInvoiceStore();
   const { toast } = useToast();
+  const [chartRange, setChartRange] = useState<ChartRange>('7d');
 
   const today = todayISO();
 
@@ -78,7 +88,53 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
     );
   }, [invoices, today]);
 
+  // Chart data: daily revenue for the selected range
+  const chartData = useMemo(() => {
+    const days = chartRange === '7d' ? 7 : chartRange === '14d' ? 14 : 30;
+    const result: { date: string; label: string; pendapatan: number; nota: number }[] = [];
+    const now = new Date();
+
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      result.push({ date: dateStr, label: getDayLabel(dateStr), pendapatan: 0, nota: 0 });
+    }
+
+    for (const inv of invoices) {
+      const entry = result.find(r => r.date === inv.invoiceDate);
+      if (entry) {
+        const { grandTotal } = calcInvoiceTotals(inv);
+        entry.pendapatan += grandTotal;
+        entry.nota++;
+      }
+    }
+
+    return result;
+  }, [invoices, chartRange]);
+
+  // Weekly summary
+  const weeklySummary = useMemo(() => {
+    const now = new Date();
+    const weekAgo = new Date(now);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const weekStr = weekAgo.toISOString().split('T')[0];
+
+    let revenue = 0;
+    let count = 0;
+    for (const inv of invoices) {
+      if (inv.invoiceDate >= weekStr) {
+        const { grandTotal } = calcInvoiceTotals(inv);
+        revenue += grandTotal;
+        count++;
+      }
+    }
+    return { revenue, count, avgPerDay: count > 0 ? Math.round(revenue / 7) : 0 };
+  }, [invoices]);
+
   const recent = invoices.slice(0, 5);
+
+  const formatChartTooltip = (value: number) => formatCurrency(value);
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -117,6 +173,84 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
             <div className="relative text-lg font-bold text-foreground">{value}</div>
           </div>
         ))}
+      </div>
+
+      {/* Weekly summary cards */}
+      <div className="grid gap-3 grid-cols-3">
+        <div className="rounded-xl border border-border/50 bg-card/60 p-3 text-center">
+          <p className="text-[10px] text-muted-foreground font-medium">7 Hari Terakhir</p>
+          <p className="text-sm font-bold text-foreground mt-1">{weeklySummary.count} nota</p>
+        </div>
+        <div className="rounded-xl border border-border/50 bg-card/60 p-3 text-center">
+          <p className="text-[10px] text-muted-foreground font-medium">Pendapatan 7 Hari</p>
+          <p className="text-sm font-bold text-foreground mt-1">{formatCurrency(weeklySummary.revenue)}</p>
+        </div>
+        <div className="rounded-xl border border-border/50 bg-card/60 p-3 text-center">
+          <p className="text-[10px] text-muted-foreground font-medium">Rata-rata / Hari</p>
+          <p className="text-sm font-bold text-foreground mt-1">{formatCurrency(weeklySummary.avgPerDay)}</p>
+        </div>
+      </div>
+
+      {/* Revenue chart */}
+      <div className="rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl shadow-lg overflow-hidden">
+        <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <TrendingUp className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-semibold text-foreground">Tren Pendapatan</h2>
+          </div>
+          <div className="flex gap-1">
+            {(['7d', '14d', '30d'] as ChartRange[]).map(range => (
+              <button
+                key={range}
+                onClick={() => setChartRange(range)}
+                className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-colors ${
+                  chartRange === range
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                }`}
+              >
+                {range === '7d' ? '7 Hari' : range === '14d' ? '14 Hari' : '30 Hari'}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="p-3">
+          {invoices.length === 0 ? (
+            <p className="text-muted-foreground text-sm py-8 text-center">Belum ada data untuk ditampilkan</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={chartData} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fontSize: 10 }}
+                  className="fill-muted-foreground"
+                  tickLine={false}
+                  axisLine={false}
+                  interval={chartRange === '30d' ? 4 : chartRange === '14d' ? 1 : 0}
+                />
+                <YAxis
+                  tick={{ fontSize: 10 }}
+                  className="fill-muted-foreground"
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v: number) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}jt` : v >= 1000 ? `${(v / 1000).toFixed(0)}rb` : String(v)}
+                />
+                <Tooltip
+                  formatter={formatChartTooltip}
+                  labelFormatter={(label: string) => label}
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                  }}
+                />
+                <Bar dataKey="pendapatan" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
       </div>
 
       {/* Recent notes */}
