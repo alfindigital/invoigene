@@ -16,6 +16,7 @@ export function useInvoiceStore() {
   const [profile, setProfile] = useLocalStorage<BusinessProfile>('inv_profile', defaultProfile);
   const [catalog, setCatalog] = useLocalStorage<CatalogItem[]>('inv_catalog', []);
   const [settings, setSettings] = useLocalStorage<AppSettings>('inv_settings', defaultSettings);
+  const [templates, setTemplates] = useLocalStorage<InvoiceTemplate[]>('inv_templates', []);
 
   const addInvoice = (inv: Invoice) => {
     setInvoices(prev => [inv, ...prev]);
