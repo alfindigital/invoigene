@@ -22,7 +22,7 @@ interface InvoiceFormProps {
 export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
   const { toast } = useToast();
   const store = useInvoiceStore();
-  const { profile, catalog, settings, addInvoice, updateInvoice } = store;
+  const { profile, catalog, settings, addInvoice, updateInvoice, templates, addTemplate, deleteTemplate } = store;
 
   const existing = editId ? store.invoices.find(i => i.id === editId) : null;
 
