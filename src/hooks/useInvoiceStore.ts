@@ -1,5 +1,5 @@
 import { useLocalStorage } from './useLocalStorage';
-import { Invoice, Client, BusinessProfile, CatalogItem, AppSettings } from '@/types/invoice';
+import { Invoice, Client, BusinessProfile, CatalogItem, AppSettings, InvoiceTemplate } from '@/types/invoice';
 
 const defaultProfile: BusinessProfile = {
   companyName: '', logo: '', address: '', phone: '', email: '', taxId: '',
