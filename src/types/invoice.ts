@@ -73,6 +73,21 @@ export interface InvoiceSettings {
   nextNumber: number;
 }
 
+export interface InvoiceTemplate {
+  id: string;
+  name: string;
+  buyerName: string;
+  buyerPhone: string;
+  lineItems: LineItem[];
+  notes: string;
+  additionalDiscountType: DiscountType;
+  additionalDiscountValue: number;
+  taxType: 'ppn11' | 'custom' | 'none';
+  customTaxRate: number;
+  shippingCost: number;
+  createdAt: string;
+}
+
 export interface AppSettings {
   invoiceSettings: InvoiceSettings;
 }
