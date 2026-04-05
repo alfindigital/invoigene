@@ -9,7 +9,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Minus, Trash2, Save, MessageCircle, ChevronDown, ChevronUp, ShoppingBag, Flame, BookmarkPlus, BookMarked } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import InvoicePreview from '@/components/InvoicePreview';
 
 interface InvoiceFormProps {
