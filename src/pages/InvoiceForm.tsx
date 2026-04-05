@@ -37,6 +37,8 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
   const [shippingCost, setShippingCost] = useState(existing?.shippingCost || 0);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [templateName, setTemplateName] = useState('');
 
   // Manual add
   const [manualDesc, setManualDesc] = useState('');
