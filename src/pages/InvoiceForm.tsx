@@ -16,8 +16,6 @@ interface InvoiceFormProps {
   onNavigate: (page: string) => void;
 }
 
-// Line items are created inline via catalog or manual add
-
 export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
   const { toast } = useToast();
   const store = useInvoiceStore();
@@ -39,7 +37,6 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
   const [showTemplates, setShowTemplates] = useState(false);
   const [templateName, setTemplateName] = useState('');
 
-  // Manual add
   const [manualDesc, setManualDesc] = useState('');
   const [manualPrice, setManualPrice] = useState('');
 
@@ -50,7 +47,6 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
     const freq: Record<string, number> = {};
     for (const inv of store.invoices) {
       for (const item of inv.lineItems) {
-        // Match catalog items by description+price
         const match = catalog.find(c => c.description === item.description && c.unitPrice === item.unitPrice);
         if (match) {
           freq[match.id] = (freq[match.id] || 0) + item.quantity;
@@ -67,7 +63,6 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
   const addFromCatalog = (catId: string) => {
     const cat = catalog.find(c => c.id === catId);
     if (!cat) return;
-    // If already in list, increment qty
     const existingItem = lineItems.find(i => i.description === cat.description && i.unitPrice === cat.unitPrice);
     if (existingItem) {
       setLineItems(prev => prev.map(i => i.id === existingItem.id ? { ...i, quantity: i.quantity + 1 } : i));
@@ -104,15 +99,9 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
     currency: 'IDR',
     invoiceDate: existing?.invoiceDate || todayISO(),
     dueDate: existing?.dueDate || addDays(todayISO(), 7),
-    notes,
-    buyerName,
-    buyerPhone,
-    lineItems,
-    additionalDiscountType,
-    additionalDiscountValue,
-    taxType,
-    customTaxRate,
-    shippingCost,
+    notes, buyerName, buyerPhone, lineItems,
+    additionalDiscountType, additionalDiscountValue,
+    taxType, customTaxRate, shippingCost,
     paidDate: existing?.paidDate,
   });
 
@@ -136,15 +125,77 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
     onNavigate('history');
   };
 
+  const handleSaveTemplate = () => {
+    if (!templateName.trim() || lineItems.length === 0) {
+      toast({ title: 'Oops', description: 'Beri nama template dan tambahkan minimal 1 item', variant: 'destructive' });
+      return;
+    }
+    const tpl: InvoiceTemplate = {
+      id: crypto.randomUUID(),
+      name: templateName.trim(),
+      buyerName, buyerPhone,
+      lineItems: lineItems.map(i => ({ ...i, id: crypto.randomUUID() })),
+      notes, additionalDiscountType, additionalDiscountValue,
+      taxType, customTaxRate, shippingCost,
+      createdAt: todayISO(),
+    };
+    addTemplate(tpl);
+    setTemplateName('');
+    toast({ title: '✅ Template Disimpan', description: `"${tpl.name}" siap digunakan` });
+  };
+
+  const loadTemplate = (tpl: InvoiceTemplate) => {
+    setBuyerName(tpl.buyerName);
+    setBuyerPhone(tpl.buyerPhone);
+    setLineItems(tpl.lineItems.map(i => ({ ...i, id: crypto.randomUUID() })));
+    setNotes(tpl.notes);
+    setAdditionalDiscountType(tpl.additionalDiscountType);
+    setAdditionalDiscountValue(tpl.additionalDiscountValue);
+    setTaxType(tpl.taxType);
+    setCustomTaxRate(tpl.customTaxRate);
+    setShippingCost(tpl.shippingCost);
+    setShowTemplates(false);
+    toast({ title: '📋 Template Dimuat', description: `"${tpl.name}" berhasil dimuat` });
+  };
+
   if (showPreview) {
     return <InvoicePreview invoice={buildInvoice()} profile={profile} onBack={() => setShowPreview(false)} />;
   }
 
   return (
     <div className="space-y-4 max-w-lg mx-auto">
-      <h1 className="text-lg font-bold text-foreground">{existing ? 'Edit Nota' : 'Nota Baru'}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-bold text-foreground">{existing ? 'Edit Nota' : 'Nota Baru'}</h1>
+        {templates.length > 0 && (
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={() => setShowTemplates(!showTemplates)}>
+            <BookMarked className="h-3.5 w-3.5" /> Template ({templates.length})
+          </Button>
+        )}
+      </div>
 
-      {/* Buyer info — minimal */}
+      {/* Template picker */}
+      {showTemplates && templates.length > 0 && (
+        <div className="space-y-2 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-3">
+          <p className="text-xs font-medium text-muted-foreground">📋 Pilih template untuk dimuat:</p>
+          <div className="space-y-1.5">
+            {templates.map(tpl => (
+              <div key={tpl.id} className="flex items-center justify-between rounded-lg border bg-card p-2.5">
+                <button onClick={() => loadTemplate(tpl)} className="flex-1 text-left min-w-0">
+                  <p className="text-sm font-medium truncate">{tpl.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {tpl.lineItems.length} item · {tpl.buyerName || 'Tanpa pembeli'}
+                  </p>
+                </button>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={() => deleteTemplate(tpl.id)}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Buyer info */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
           <Label className="text-xs text-muted-foreground">Nama Pembeli (opsional)</Label>
@@ -245,6 +296,19 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
         </div>
       )}
 
+      {/* Save as template */}
+      {lineItems.length > 0 && !existing && (
+        <div className="flex gap-2 items-end">
+          <div className="flex-1 space-y-1">
+            <Label className="text-xs text-muted-foreground">Simpan sebagai template</Label>
+            <Input value={templateName} onChange={e => setTemplateName(e.target.value)} placeholder="Pesanan Harian Pak Budi..." className="h-9" />
+          </div>
+          <Button variant="secondary" size="sm" className="h-9 gap-1 shrink-0" onClick={handleSaveTemplate} disabled={!templateName.trim()}>
+            <BookmarkPlus className="h-3.5 w-3.5" /> Simpan
+          </Button>
+        </div>
+      )}
+
       {/* Advanced options (collapsed) */}
       <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
         <CollapsibleTrigger asChild>
@@ -296,7 +360,6 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
 
       {/* Sticky total bar */}
       <div className="sticky bottom-20 z-30 rounded-2xl border bg-card/95 backdrop-blur-lg shadow-xl p-4 space-y-3">
-        {/* Summary */}
         <div className="space-y-1 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Subtotal ({lineItems.length} item)</span>
@@ -326,7 +389,6 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
           </div>
         </div>
 
-        {/* Action buttons */}
         <div className="grid grid-cols-2 gap-2">
           <Button variant="outline" className="h-12 text-sm font-semibold" onClick={() => handleSave(false)}>
             <Save className="mr-1.5 h-4 w-4" /> Simpan
