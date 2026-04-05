@@ -43,11 +43,15 @@ export function useInvoiceStore() {
   const updateCatalogItem = (item: CatalogItem) => setCatalog(prev => prev.map(i => i.id === item.id ? item : i));
   const deleteCatalogItem = (id: string) => setCatalog(prev => prev.filter(i => i.id !== id));
 
+  const addTemplate = (t: InvoiceTemplate) => setTemplates(prev => [...prev, t]);
+  const deleteTemplate = (id: string) => setTemplates(prev => prev.filter(t => t.id !== id));
+
   return {
     invoices, addInvoice, updateInvoice, deleteInvoice,
     clients, addClient, updateClient, deleteClient,
     profile, setProfile,
     catalog, addCatalogItem, updateCatalogItem, deleteCatalogItem,
+    templates, addTemplate, deleteTemplate,
     settings, setSettings,
   };
 }
