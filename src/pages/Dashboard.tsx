@@ -4,7 +4,9 @@ import { calcInvoiceTotals, Invoice } from '@/types/invoice';
 import { formatCurrency, formatDate, getStatusLabel, getStatusColor, getBuyerDisplay, todayISO } from '@/lib/formatters';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FileText, Plus, Clock, DollarSign, Database, TrendingUp } from 'lucide-react';
+import { FileText, Plus, Clock, DollarSign, Database, TrendingUp, Download } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { exportCSV, exportPDF } from '@/lib/exportReport';
 import { useToast } from '@/hooks/use-toast';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
