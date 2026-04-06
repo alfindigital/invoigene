@@ -4,7 +4,9 @@ import { calcInvoiceTotals, Invoice } from '@/types/invoice';
 import { formatCurrency, formatDate, getStatusLabel, getStatusColor, getBuyerDisplay, todayISO } from '@/lib/formatters';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FileText, Plus, Clock, DollarSign, Database, TrendingUp } from 'lucide-react';
+import { FileText, Plus, Clock, DollarSign, Database, TrendingUp, Download } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { exportCSV, exportPDF } from '@/lib/exportReport';
 import { useToast } from '@/hooks/use-toast';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
@@ -21,9 +23,10 @@ function getDayLabel(dateStr: string): string {
 }
 
 export default function Dashboard({ onNavigate }: DashboardProps) {
-  const { invoices, addInvoice } = useInvoiceStore();
+  const { invoices, addInvoice, profile } = useInvoiceStore();
   const { toast } = useToast();
   const [chartRange, setChartRange] = useState<ChartRange>('7d');
+  const [exportRange, setExportRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
 
   const today = todayISO();
 
@@ -133,6 +136,25 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   }, [invoices]);
 
   const recent = invoices.slice(0, 5);
+
+  const exportInvoices = useMemo(() => {
+    if (exportRange === 'all') return invoices;
+    const days = exportRange === '7d' ? 7 : exportRange === '30d' ? 30 : 90;
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    const cutoffStr = cutoff.toISOString().split('T')[0];
+    return invoices.filter(inv => inv.invoiceDate >= cutoffStr);
+  }, [invoices, exportRange]);
+
+  const handleExport = (format: 'csv' | 'pdf') => {
+    if (exportInvoices.length === 0) {
+      toast({ title: 'Kosong', description: 'Tidak ada nota untuk diekspor di rentang ini.' });
+      return;
+    }
+    if (format === 'csv') exportCSV(exportInvoices);
+    else exportPDF(exportInvoices, profile.companyName);
+    toast({ title: '✅ Berhasil', description: `Laporan ${format.toUpperCase()} berhasil diunduh (${exportInvoices.length} nota)` });
+  };
 
   const formatChartTooltip = (value: number) => formatCurrency(value);
 
@@ -251,6 +273,38 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
             </ResponsiveContainer>
           )}
         </div>
+      </div>
+
+      {/* Export section */}
+      <div className="rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl shadow-lg overflow-hidden">
+        <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Download className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-semibold text-foreground">Ekspor Laporan</h2>
+          </div>
+          <Select value={exportRange} onValueChange={(v) => setExportRange(v as typeof exportRange)}>
+            <SelectTrigger className="w-[120px] h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7d">7 Hari</SelectItem>
+              <SelectItem value="30d">30 Hari</SelectItem>
+              <SelectItem value="90d">90 Hari</SelectItem>
+              <SelectItem value="all">Semua</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="p-4 flex gap-3">
+          <Button variant="outline" className="flex-1" onClick={() => handleExport('csv')}>
+            <Download className="mr-1.5 h-4 w-4" /> CSV
+          </Button>
+          <Button className="flex-1" onClick={() => handleExport('pdf')}>
+            <Download className="mr-1.5 h-4 w-4" /> PDF
+          </Button>
+        </div>
+        <p className="px-4 pb-3 text-[11px] text-muted-foreground">
+          {exportInvoices.length} nota dalam rentang ini
+        </p>
       </div>
 
       {/* Recent notes */}
