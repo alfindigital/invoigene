@@ -55,17 +55,20 @@ export default function InvoiceHistory({ onEdit, onPreview }: InvoiceHistoryProp
     const year = new Date().getFullYear();
     const numStr = String(newNum).padStart(4, '0');
     const invoiceNumber = settings.invoiceSettings.yearInNumber ? `${prefix}-${year}-${numStr}` : `${prefix}-${numStr}`;
+    const newId = crypto.randomUUID();
     const dup = {
       ...inv,
-      id: crypto.randomUUID(),
+      id: newId,
       invoiceNumber,
       status: 'draft' as const,
       invoiceDate: new Date().toISOString().split('T')[0],
       dueDate: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
       paidDate: undefined,
+      lineItems: inv.lineItems.map(li => ({ ...li, id: crypto.randomUUID() })),
     };
     addInvoice(dup);
-    toast({ title: 'Berhasil', description: 'Nota berhasil diduplikasi' });
+    toast({ title: 'Berhasil', description: 'Nota diduplikasi, membuka editor...' });
+    onEdit(newId);
   };
 
   const handleMarkPaid = (inv: typeof invoices[0]) => {
