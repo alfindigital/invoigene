@@ -74,7 +74,7 @@ const Index = () => {
         <div className="flex items-center gap-2.5">
           <img src={logoImg} alt="Logo" width={32} height={32} className="rounded-lg" />
           <h1 className="text-lg font-bold tracking-tight">
-            {pageTitles[page] || 'Nota Digital'}
+            {pageTitles[page] || 'InvoiGene'}
           </h1>
         </div>
         <button
