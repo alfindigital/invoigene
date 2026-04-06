@@ -112,6 +112,13 @@
     radial-gradient(circle at 60% 80%, hsl(var(--primary) / 0.02) 0%, transparent 50%);
 }
 
+.dark .app-bg-pattern {
+  background-image:
+    radial-gradient(ellipse at 15% 50%, hsl(217 90% 62% / 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 15%, hsl(250 80% 60% / 0.04) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 85%, hsl(217 90% 62% / 0.03) 0%, transparent 50%);
+}
+
 /* Safe area for bottom nav on notched devices */
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
