@@ -137,6 +137,25 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
 
   const recent = invoices.slice(0, 5);
 
+  const exportInvoices = useMemo(() => {
+    if (exportRange === 'all') return invoices;
+    const days = exportRange === '7d' ? 7 : exportRange === '30d' ? 30 : 90;
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    const cutoffStr = cutoff.toISOString().split('T')[0];
+    return invoices.filter(inv => inv.invoiceDate >= cutoffStr);
+  }, [invoices, exportRange]);
+
+  const handleExport = (format: 'csv' | 'pdf') => {
+    if (exportInvoices.length === 0) {
+      toast({ title: 'Kosong', description: 'Tidak ada nota untuk diekspor di rentang ini.' });
+      return;
+    }
+    if (format === 'csv') exportCSV(exportInvoices);
+    else exportPDF(exportInvoices, profile.companyName);
+    toast({ title: '✅ Berhasil', description: `Laporan ${format.toUpperCase()} berhasil diunduh (${exportInvoices.length} nota)` });
+  };
+
   const formatChartTooltip = (value: number) => formatCurrency(value);
 
   return (
