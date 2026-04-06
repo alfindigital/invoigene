@@ -275,6 +275,38 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         </div>
       </div>
 
+      {/* Export section */}
+      <div className="rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl shadow-lg overflow-hidden">
+        <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Download className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-semibold text-foreground">Ekspor Laporan</h2>
+          </div>
+          <Select value={exportRange} onValueChange={(v) => setExportRange(v as typeof exportRange)}>
+            <SelectTrigger className="w-[120px] h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7d">7 Hari</SelectItem>
+              <SelectItem value="30d">30 Hari</SelectItem>
+              <SelectItem value="90d">90 Hari</SelectItem>
+              <SelectItem value="all">Semua</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="p-4 flex gap-3">
+          <Button variant="outline" className="flex-1" onClick={() => handleExport('csv')}>
+            <Download className="mr-1.5 h-4 w-4" /> CSV
+          </Button>
+          <Button className="flex-1" onClick={() => handleExport('pdf')}>
+            <Download className="mr-1.5 h-4 w-4" /> PDF
+          </Button>
+        </div>
+        <p className="px-4 pb-3 text-[11px] text-muted-foreground">
+          {exportInvoices.length} nota dalam rentang ini
+        </p>
+      </div>
+
       {/* Recent notes */}
       <div className="rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl shadow-lg overflow-hidden">
         <div className="px-4 py-3 border-b border-border/50">
