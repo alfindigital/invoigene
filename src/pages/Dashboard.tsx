@@ -23,9 +23,10 @@ function getDayLabel(dateStr: string): string {
 }
 
 export default function Dashboard({ onNavigate }: DashboardProps) {
-  const { invoices, addInvoice } = useInvoiceStore();
+  const { invoices, addInvoice, profile } = useInvoiceStore();
   const { toast } = useToast();
   const [chartRange, setChartRange] = useState<ChartRange>('7d');
+  const [exportRange, setExportRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
 
   const today = todayISO();
 
