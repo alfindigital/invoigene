@@ -18,6 +18,33 @@ const pageTitles: Record<string, string> = {
   settings: 'Pengaturan',
 };
 
+const pageMeta: Record<string, { title: string; description: string }> = {
+  dashboard: {
+    title: 'Dashboard Penjualan — InvoiGene',
+    description: 'Pantau penjualan harian, omzet, dan transaksi terbaru toko Anda di InvoiGene.',
+  },
+  new: {
+    title: 'Buat Nota Baru — InvoiGene',
+    description: 'Buat nota & invoice profesional dalam 3 tap. Gratis dan tanpa daftar.',
+  },
+  edit: {
+    title: 'Edit Nota — InvoiGene',
+    description: 'Perbarui data nota dan kirim ulang ke pelanggan via WhatsApp.',
+  },
+  preview: {
+    title: 'Preview Nota — InvoiGene',
+    description: 'Pratinjau nota sebelum cetak struk thermal atau kirim ke pelanggan.',
+  },
+  history: {
+    title: 'Riwayat Nota — InvoiGene',
+    description: 'Cari, filter, dan kelola seluruh nota & invoice yang pernah dibuat.',
+  },
+  settings: {
+    title: 'Pengaturan Toko — InvoiGene',
+    description: 'Atur profil toko, logo, format struk, dan preferensi InvoiGene.',
+  },
+};
+
 const Index = () => {
   const { invoices, profile } = useInvoiceStore();
   const [page, setPage] = useState('dashboard');
@@ -37,6 +64,18 @@ const Index = () => {
     document.documentElement.classList.toggle('dark', darkMode);
     localStorage.setItem('inv_dark', String(darkMode));
   }, [darkMode]);
+
+  useEffect(() => {
+    const meta = pageMeta[displayedPage] || pageMeta.dashboard;
+    document.title = meta.title;
+    let descTag = document.querySelector('meta[name="description"]');
+    if (!descTag) {
+      descTag = document.createElement('meta');
+      descTag.setAttribute('name', 'description');
+      document.head.appendChild(descTag);
+    }
+    descTag.setAttribute('content', meta.description);
+  }, [displayedPage]);
 
   const navigate = (p: string) => {
     if (p === displayedPage && p !== 'edit' && p !== 'preview') return;
