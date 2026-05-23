@@ -1,0 +1,9 @@
+# InvoiGene
+
+> Aplikasi invoice gratis untuk membuat, mengelola, dan mengirim nota profesional dengan mudah — cocok untuk UMKM, freelancer, dan toko kecil.
+
+InvoiGene berjalan sepenuhnya di browser tanpa perlu daftar akun. Data tersimpan lokal di perangkat pengguna. Fitur utama: katalog produk, nota cepat, template, cetak struk thermal (58mm/80mm), ekspor PDF & CSV, kirim via WhatsApp, dan dashboard penjualan.
+
+## Pages
+
+- [Beranda](/): Aplikasi InvoiGene — dashboard penjualan, pembuatan nota, riwayat, dan pengaturan profil usaha.
