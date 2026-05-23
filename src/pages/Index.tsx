@@ -72,13 +72,14 @@ const Index = () => {
     <div className="min-h-screen flex flex-col app-bg-pattern">
       <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-5 bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-foreground))] shadow-sm">
         <div className="flex items-center gap-2.5">
-          <img src={logoImg} alt="Logo" width={32} height={32} className="rounded-lg" />
-          <h1 className="text-lg font-bold tracking-tight">
+          <img src={logoImg} alt="Logo InvoiGene" width={32} height={32} className="rounded-lg" />
+          <div className="text-lg font-bold tracking-tight" aria-label={`Halaman ${pageTitles[page] || 'InvoiGene'}`}>
             {pageTitles[page] || 'InvoiGene'}
-          </h1>
+          </div>
         </div>
         <button
           onClick={() => setDarkMode(!darkMode)}
+          aria-label={darkMode ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'}
           className="flex items-center justify-center h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-[hsl(var(--nav-foreground))]"
         >
           {darkMode ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}

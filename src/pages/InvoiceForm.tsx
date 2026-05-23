@@ -265,7 +265,7 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
           <Label className="text-xs text-muted-foreground">Harga</Label>
           <Input type="number" value={manualPrice} onChange={e => setManualPrice(e.target.value)} placeholder="0" className="h-10" />
         </div>
-        <Button size="icon" className="h-10 w-10 shrink-0" onClick={handleManualAdd} disabled={!manualDesc || !manualPrice}>
+        <Button size="icon" className="h-10 w-10 shrink-0" onClick={handleManualAdd} disabled={!manualDesc || !manualPrice} aria-label="Tambah item manual">
           <Plus className="h-4 w-4" />
         </Button>
       </div>
@@ -280,14 +280,14 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
                 <p className="text-xs text-muted-foreground">{formatCurrency(item.unitPrice)} × {item.quantity} = {formatCurrency(calcLineItemSubtotal(item))}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQty(item.id, -1)}>
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQty(item.id, -1)} aria-label={`Kurangi jumlah ${item.description}`}>
                   <Minus className="h-3 w-3" />
                 </Button>
                 <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
-                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQty(item.id, 1)}>
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQty(item.id, 1)} aria-label={`Tambah jumlah ${item.description}`}>
                   <Plus className="h-3 w-3" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeItem(item.id)}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeItem(item.id)} aria-label={`Hapus ${item.description}`}>
                   <Trash2 className="h-3 w-3" />
                 </Button>
               </div>

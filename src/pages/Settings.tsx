@@ -63,7 +63,7 @@ export default function Settings() {
               <Label className="text-xs">Harga</Label>
               <Input type="number" value={newCat.unitPrice} onChange={e => setNewCat(prev => ({ ...prev, unitPrice: Number(e.target.value) }))} className="h-9" />
             </div>
-            <Button size="icon" className="h-9 w-9" onClick={handleAddCatalog} disabled={!newCat.description}>
+            <Button size="icon" className="h-9 w-9" onClick={handleAddCatalog} disabled={!newCat.description} aria-label="Tambah item katalog">
               <Plus className="h-4 w-4" />
             </Button>
           </div>
@@ -75,7 +75,7 @@ export default function Settings() {
                     <span className="font-medium">{item.description}</span>
                     <span className="text-muted-foreground ml-1">· {item.unit} · {formatCurrency(item.unitPrice)}</span>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={() => deleteCatalogItem(item.id)}>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={() => deleteCatalogItem(item.id)} aria-label={`Hapus ${item.description}`}>
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
@@ -90,7 +90,7 @@ export default function Settings() {
         <CardHeader><CardTitle>🏪 Profil Usaha</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center gap-3">
-            {p.logo && <img src={p.logo} alt="Logo" className="h-12 w-12 rounded-lg object-contain border" />}
+            {p.logo && <img src={p.logo} alt={`Logo ${p.companyName || 'usaha'}`} className="h-12 w-12 rounded-lg object-contain border" />}
             <Label htmlFor="logo-upload" className="cursor-pointer inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
               <Upload className="h-4 w-4" /> {p.logo ? 'Ganti Logo' : 'Upload Logo'}
             </Label>

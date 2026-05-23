@@ -145,21 +145,21 @@ export default function InvoiceHistory({ onEdit, onPreview }: InvoiceHistoryProp
                   </div>
                   <div className="flex gap-1 justify-end border-t border-border/50 pt-2">
                     {inv.status !== 'paid' && inv.status !== 'cancelled' && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleMarkPaid(inv)} title="Lunas">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleMarkPaid(inv)} title="Lunas" aria-label={`Tandai ${inv.invoiceNumber} lunas`}>
                         <CheckCircle className="h-4 w-4" />
                       </Button>
                     )}
                     {onPreview && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onPreview(inv.id)} title="Preview">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onPreview(inv.id)} title="Preview" aria-label={`Pratinjau ${inv.invoiceNumber}`}>
                         <Eye className="h-4 w-4" />
                       </Button>
                     )}
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" onClick={() => handleWhatsApp(inv)} title="WhatsApp"><MessageCircle className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(inv.id)}><Edit className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDuplicate(inv)}><Copy className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600" onClick={() => handleWhatsApp(inv)} title="WhatsApp" aria-label={`Kirim ${inv.invoiceNumber} via WhatsApp`}><MessageCircle className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(inv.id)} aria-label={`Edit ${inv.invoiceNumber}`}><Edit className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDuplicate(inv)} aria-label={`Duplikat ${inv.invoiceNumber}`}><Copy className="h-4 w-4" /></Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" aria-label={`Hapus ${inv.invoiceNumber}`}><Trash2 className="h-4 w-4" /></Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>

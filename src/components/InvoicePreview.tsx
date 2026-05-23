@@ -109,7 +109,7 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
       <div ref={printRef} className="bg-white text-black mx-auto max-w-[210mm] p-4 sm:p-6 shadow-lg print:shadow-none print:p-0" style={{ fontFamily: 'system-ui, sans-serif', fontSize: '12px', lineHeight: '1.5' }}>
         <div className="flex justify-between items-start gap-4 mb-4">
           <div className="flex items-center gap-3">
-            {profile.logo && <img src={profile.logo} alt="Logo" className="h-12 w-12 object-contain" />}
+            {profile.logo && <img src={profile.logo} alt={`Logo ${profile.companyName || 'usaha'}`} className="h-12 w-12 object-contain" />}
             <div>
               <h1 className="text-base font-bold">{profile.companyName || 'Nama Usaha'}</h1>
               {profile.address && <p className="text-gray-600 text-xs">{profile.address}</p>}
