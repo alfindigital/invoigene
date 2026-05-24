@@ -45,6 +45,16 @@
 
     --nav-bg: 220 80% 35%;
     --nav-foreground: 210 40% 98%;
+
+    --brand-deep: 222 47% 17%;
+    --brand-soft: 214 95% 93%;
+    --success: 152 70% 38%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --font-display: 'Syne', 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
 
   .dark {
@@ -97,9 +107,24 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
+  /* Prevent iOS zoom on form focus */
+  input, select, textarea {
+    font-size: 16px;
+  }
+
+  /* Tabular numerals for currency/qty */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -119,7 +144,24 @@
     radial-gradient(ellipse at 50% 85%, hsl(217 90% 62% / 0.03) 0%, transparent 50%);
 }
 
+/* Brand gradient utility — used on FAB & hero cards */
+.bg-gradient-brand {
+  background-image: linear-gradient(135deg, hsl(var(--brand-deep)) 0%, hsl(var(--primary)) 60%, hsl(217 90% 62%) 100%);
+}
+
 /* Safe area for bottom nav on notched devices */
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pb-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+}
+
+/* Tap feedback */
+@media (hover: none) {
+  .tap-scale:active {
+    transform: scale(0.96);
+    transition: transform 0.1s ease-out;
+  }
 }
