@@ -1,4 +1,4 @@
-import { LayoutDashboard, History, Settings, Plus, Package } from 'lucide-react';
+import { LayoutDashboard, History, Settings, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const leftItems = [
@@ -7,7 +7,6 @@ const leftItems = [
 ];
 
 const rightItems = [
-  { title: 'Item', key: 'items', icon: Package },
   { title: 'Setelan', key: 'settings', icon: Settings },
 ];
 
