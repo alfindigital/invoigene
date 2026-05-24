@@ -1,73 +1,82 @@
+## Tujuan
+Brand **InvoiGene** dipertahankan, tapi identitas visual dirapikan dan UI dirombak agar nyaman dipakai satu tangan di HP.
 
+## 1. Brand & Ikon
+- **Nama**: InvoiGene (tetap, sudah konsisten di metadata, domain, sitemap).
+- **Logo baru**: ikon kotak rounded gradient Royal Blue (`#1E3A8A → #3B82F6`) dengan glyph nota + checkmark putih di tengah. Diset transparan untuk dipakai di header gelap & terang.
+- **Wordmark**: "InvoiGene" pakai Syne SemiBold, tagline "Nota cepat untuk UMKM" pakai Plus Jakarta Sans.
+- File yang di-generate:
+  - `src/assets/logo.png` (logo penuh untuk header, transparan)
+  - `public/favicon.png` (512×512, ganti `favicon.ico` lama)
+  - `public/og-image.jpg` (1200×630 untuk share WA/sosmed)
 
-# Rombak Konsep: Nota Digital untuk UMKM & Pedagang Kaki Lima
+## 2. Konsistensi Font
+- **Heading**: Syne (SemiBold/Bold) — dipakai untuk judul halaman, angka besar dashboard, total nota.
+- **Body & UI**: Plus Jakarta Sans (400/500/600) — semua teks, label, tombol, tabel.
+- **Angka tabular**: `font-variant-numeric: tabular-nums` untuk kolom harga & total.
+- Tambah `Syne` ke `index.html` (Google Fonts) dan token `--font-display` / `--font-sans` di `index.css` + util Tailwind `font-display` / `font-sans`.
+- Audit semua komponen untuk hapus `font-mono`/`font-serif` liar dan ganti heading ke `font-display`.
 
-## Masalah Sekarang
-Form invoice terlalu rumit untuk pedagang kecil: ada manajemen klien, multi-currency, PPN, diskon per-item, bilingual labels, dll. Pedagang kaki lima butuh input cepat — ketik nama pembeli (opsional), tambah item, langsung cetak/kirim.
+## 3. Konsistensi Warna
+- Palet Royal Blue dipertahankan, tapi disisir agar tidak ada warna mentah (`text-gray-*`, `bg-white`) di komponen — semua harus pakai token semantik.
+- Token yang ditegaskan:
+  - `--primary 220 80% 50%` (Royal Blue) + `--primary-foreground` putih.
+  - `--brand-deep 222 47% 17%` (`#1E293B`) untuk header gelap.
+  - `--brand-soft 214 95% 93%` untuk badge & chip lembut.
+  - `--success`, `--warning`, `--danger` ditambahkan biar status nota (lunas/draft/batal) konsisten.
+- Tambah gradient utility `bg-gradient-brand` (Royal → Sky) untuk FAB & hero card dashboard.
+- Audit & ganti class warna hardcoded di `Dashboard`, `InvoiceForm`, `InvoiceHistory`, `Settings`, `ThermalReceipt` (preview struk tetap monokrom — tidak diubah).
 
-## Konsep Baru
+## 4. Rombak UI/UX Mobile (prioritas yang dipilih)
 
-### Filosofi: "3 Ketukan = Nota Jadi"
-- Tidak ada konsep "klien" yang disimpan — cukup ketik nama pembeli (opsional)
-- Item dari katalog bisa ditambah dengan 1 tap
-- Default currency IDR only, pajak default none
-- Form 1 halaman, scroll minimal
+### 4a. Bottom nav + FAB
+- `BottomNav` dirombak jadi 5 slot dengan FAB lingkaran di tengah:
+  ```text
+  [ Home ] [ Riwayat ] [ + ] [ Item ] [ Setting ]
+  ```
+- FAB = tombol bulat 64px, gradient brand, ikon `Plus`, shadow tebal — langsung buka **Nota Baru**.
+- Bottom nav `fixed bottom-0` dengan `safe-area-inset-bottom` (iOS notch), tinggi 64px, ikon + label kecil, indicator aktif berupa pill di belakang ikon.
 
-### Perubahan per Halaman
+### 4b. Tombol & input lebih besar
+- Set baseline tap target: `min-h-12` (48px) untuk semua tombol & input mobile.
+- Variant baru di shadcn `Button`: `size="touch"` (h-12, px-5, text-base) — dipakai default di form Nota.
+- `Input`, `Select`, `Textarea`: tinggi 48px, font-size 16px (cegah zoom iOS), padding kiri-kanan 16px.
+- Tombol qty di item list: 44×44 dengan jarak antar tombol ≥ 8px.
 
-**1. Halaman "Buat Nota" (rombak total InvoiceForm)**
-- Layout baru: 1 halaman simpel, bukan banyak Card terpisah
-- Bagian atas: Nama Pembeli (1 input, opsional) + No. HP (opsional, untuk WhatsApp)
-- Nomor nota auto-generate, tanggal auto hari ini
-- **Quick-add items**: Grid tombol dari katalog (tap = langsung masuk, tap lagi = tambah qty). Mirip POS/kasir
-- Manual add: input nama item + harga + qty dalam 1 baris compact
-- Ringkasan total real-time di bagian bawah (sticky)
-- Tombol besar: "Simpan & Kirim WA" dan "Simpan"
-- Diskon & pajak tersembunyi di balik toggle "Opsi lanjutan" (collapsed by default)
+### 4c. Mode satu tangan
+- Header halaman dirampingkan (tinggi 56px), judul kiri, aksi (dark mode, profil) di kanan — tidak ada aksi penting di header.
+- **Aksi utama selalu di bawah**, sticky di atas bottom nav:
+  - InvoiceForm: bar bawah berisi tombol "Simpan & Preview" full-width (gradient brand).
+  - InvoicePreview: bar bawah "Kirim WhatsApp" + "Cetak" sebagai 2 tombol sejajar.
+  - InvoiceHistory: FAB tetap untuk buat nota baru, filter chips di atas list (bukan modal atas).
+- Konten halaman dapat `pb-32` agar tidak ketutup bar aksi + bottom nav.
+- Form Nota Baru: field pelanggan & item disusun vertikal dengan section card, scroll halus, fokus auto ke field berikutnya setelah enter.
 
-**2. Dashboard (simplifikasi)**
-- Stat cards: Total Nota Hari Ini, Pendapatan Hari Ini, Total Bulan Ini, Belum Dibayar
-- Fokus pada ringkasan harian, bukan bulanan
-- Tombol besar "Buat Nota Baru"
-- Daftar 5 nota terakhir (tetap)
+### 4d. Sentuhan kecil yang bikin enak
+- Animasi tap (`active:scale-95`) pada tombol & kartu.
+- Skeleton card di dashboard saat loading data localStorage pertama.
+- Toast (sonner) untuk feedback simpan/hapus, posisi `top-center` agar tidak tertutup bar bawah.
 
-**3. Riwayat (minor update)**
-- Ganti label "Klien" → "Pembeli"
-- Tetap ada search, filter, sort
+## 5. File yang Disentuh
+- `index.html` — load Syne, update theme-color jadi `#1E3A8A`.
+- `src/index.css` — tambah token brand, font-display, util gradient, safe-area.
+- `tailwind.config.ts` — daftarkan `fontFamily.display`, warna brand-deep/soft, success/warning, size `touch`.
+- `src/components/ui/button.tsx` — tambah `size: "touch"` & varian `gradient`.
+- `src/components/ui/input.tsx` & `textarea.tsx` — naikkan tinggi default di mobile.
+- `src/components/BottomNav.tsx` — rombak ke layout 5-slot dengan FAB.
+- `src/components/AppSidebar.tsx` — sinkron warna baru (desktop tetap pakai sidebar).
+- `src/pages/Index.tsx` — header ramping, padding bawah konten.
+- `src/pages/Dashboard.tsx`, `InvoiceForm.tsx`, `InvoiceHistory.tsx`, `Settings.tsx` — pakai token & varian baru, tambah sticky action bar di form & preview.
+- `src/components/InvoicePreview.tsx` — sticky action bar bawah.
+- `src/assets/logo.png`, `public/favicon.png`, `public/og-image.jpg` — aset baru.
 
-**4. Pengaturan (simplifikasi)**
-- Profil Usaha: Nama Usaha, Alamat, No HP, Logo — tanpa field email/NPWP/bank (pindah ke "Opsi Lanjutan")
-- Katalog Produk jadi fitur utama — karena pedagang jual barang yang sama terus
-- Hapus manajemen klien dari settings
+## 6. Yang TIDAK Diubah
+- Logika bisnis (perhitungan, localStorage, template, WhatsApp formatter).
+- `ThermalReceipt` (layout struk 58/80mm tetap, hanya font heading boleh disisir kalau perlu).
+- Bahasa Indonesia, format IDR & tanggal DD/MM/YYYY.
+- Sitemap, robots, metadata SEO yang sudah ada.
 
-**5. Tipe Data (types/invoice.ts)**
-- Field `client` disederhanakan: hanya `buyerName` (string) dan `buyerPhone` (string) langsung di Invoice, hapus Client interface dari invoice
-- Hapus field: `bilingualLabels`, `paymentTerms`, `footerText` dari required (jadikan opsional di "Opsi Lanjutan")
-- Default `taxType` = `'none'`, default `currency` = `'IDR'`
-- Pertahankan Client type untuk backward compat tapi tidak wajib
-
-**6. Invoice Preview (update)**
-- Layout lebih simpel, cocok untuk struk/nota kecil
-- Nama pembeli di atas, bukan "Bill To" formal
-- Hapus section bank details kecuali diisi di settings
-
-### Perubahan Teknis
-- **`types/invoice.ts`**: Tambah `buyerName`, `buyerPhone` ke Invoice. Client jadi opsional
-- **`InvoiceForm.tsx`**: Rombak total — form 1 halaman, quick-add grid, sticky total bar
-- **`Dashboard.tsx`**: Update stats ke fokus harian, update dummy data ke konteks pedagang (es teh, nasi goreng, dll)
-- **`Settings.tsx`**: Reorder — katalog di atas, profil ringkas, opsi lanjutan collapsed
-- **`InvoiceHistory.tsx`**: Update label "Klien" → "Pembeli"
-- **`InvoicePreview.tsx`**: Layout nota simpel
-- **`useInvoiceStore.ts`**: Tetap sama, minor adjustments
-- **`BottomNav.tsx`**: Ganti "Buat" → "Nota Baru" dengan ikon lebih menonjol
-
-### Contoh Flow Pedagang
-1. Buka app → tap "Nota Baru"
-2. (Opsional) ketik "Pak Budi" di nama pembeli
-3. Tap "Nasi Goreng" dari grid katalog → qty 2
-4. Tap "Es Teh" → qty 3
-5. Lihat total di bawah: Rp 55.000
-6. Tap "Simpan & Kirim WA" → selesai
-
-Total waktu: ~10 detik vs sebelumnya ~2 menit.
-
+## Catatan Teknis
+- Pakai `env(safe-area-inset-bottom)` di bottom nav & sticky action bar untuk iOS.
+- Set `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">` di `index.html`.
+- Update `mem://style/design-system` setelah implementasi (token baru + size `touch`).
