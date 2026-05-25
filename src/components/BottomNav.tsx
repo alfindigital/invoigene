@@ -1,10 +1,10 @@
-import { LayoutDashboard, History, Settings, Plus } from 'lucide-react';
+import { LayoutDashboard, History, Settings, Plus, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const items = [
   { title: 'Beranda', key: 'dashboard', icon: LayoutDashboard },
   { title: 'Riwayat', key: 'history', icon: History },
-  { title: 'Nota Baru', key: 'new', icon: Plus },
+  { title: 'Item', key: 'items', icon: Package },
   { title: 'Setelan', key: 'settings', icon: Settings },
 ];
 
@@ -49,26 +49,40 @@ function NavButton({
 }
 
 export function BottomNav({ activePage, onNavigate }: BottomNavProps) {
+  const isFabActive = activePage === 'new' || activePage === 'edit';
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-foreground))] safe-area-bottom shadow-[0_-2px_24px_rgba(0,0,0,0.18)]"
-      aria-label="Navigasi utama"
-    >
-      <div className="flex items-stretch h-[64px] max-w-2xl mx-auto px-2">
-        {items.map((item) => {
-          const isActive =
-            activePage === item.key ||
-            (item.key === 'new' && (activePage === 'new' || activePage === 'edit'));
-          return (
+    <>
+      {/* FAB — Nota Baru */}
+      <button
+        onClick={() => onNavigate('new')}
+        aria-label="Buat nota baru"
+        aria-current={isFabActive ? 'page' : undefined}
+        className={cn(
+          'fixed z-50 bottom-[76px] right-4 md:right-8 h-14 w-14 rounded-full',
+          'bg-primary text-primary-foreground shadow-[0_8px_24px_hsl(var(--primary)/0.45)]',
+          'flex items-center justify-center tap-scale transition-all',
+          'hover:shadow-[0_10px_28px_hsl(var(--primary)/0.55)]',
+          isFabActive && 'ring-4 ring-primary/30',
+        )}
+      >
+        <Plus className="h-7 w-7" strokeWidth={2.5} />
+      </button>
+
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-40 bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-foreground))] safe-area-bottom shadow-[0_-2px_24px_rgba(0,0,0,0.18)]"
+        aria-label="Navigasi utama"
+      >
+        <div className="flex items-stretch h-[64px] max-w-2xl mx-auto px-2">
+          {items.map((item) => (
             <NavButton
               key={item.key}
               item={item}
-              isActive={isActive}
+              isActive={activePage === item.key}
               onNavigate={onNavigate}
             />
-          );
-        })}
-      </div>
-    </nav>
+          ))}
+        </div>
+      </nav>
+    </>
   );
 }
