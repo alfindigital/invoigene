@@ -36,6 +36,10 @@ const pageMeta: Record<string, { title: string; description: string }> = {
     title: 'Pengaturan Toko — Notaku',
     description: 'Atur profil toko, logo, format struk, dan preferensi Notaku.',
   },
+  items: {
+    title: 'Katalog Item — Notaku',
+    description: 'Kelola katalog produk yang sering dijual agar nota bisa dibuat sekali tap.',
+  },
 };
 
 const Index = () => {
