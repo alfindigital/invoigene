@@ -26,10 +26,10 @@ const NotFound = () => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
 
     const prevTitle = document.title;
-    const desc = "Halaman tidak ditemukan di InvoiGene. Kembali ke beranda untuk membuat nota.";
-    document.title = "404 — Halaman Tidak Ditemukan | InvoiGene";
+    const desc = "Halaman tidak ditemukan di Notaku. Kembali ke beranda untuk membuat nota.";
+    document.title = "404 — Halaman Tidak Ditemukan | Notaku";
     setMeta('meta[name="description"]', "content", desc);
-    setMeta('meta[property="og:title"]', "content", "404 — Halaman Tidak Ditemukan | InvoiGene");
+    setMeta('meta[property="og:title"]', "content", "404 — Halaman Tidak Ditemukan | Notaku");
     setMeta('meta[property="og:description"]', "content", desc);
     setMeta('meta[property="og:url"]', "content", CANONICAL);
     setMeta('link[rel="canonical"]', "href", CANONICAL);

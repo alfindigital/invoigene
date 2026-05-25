@@ -20,28 +20,28 @@ const pageTitles: Record<string, string> = {
 
 const pageMeta: Record<string, { title: string; description: string }> = {
   dashboard: {
-    title: 'Dashboard Penjualan — InvoiGene',
-    description: 'Pantau penjualan harian, omzet, dan transaksi terbaru toko Anda di InvoiGene.',
+    title: 'Dashboard Penjualan — Notaku',
+    description: 'Pantau penjualan harian, omzet, dan transaksi terbaru toko Anda di Notaku.',
   },
   new: {
-    title: 'Buat Nota Baru — InvoiGene',
+    title: 'Buat Nota Baru — Notaku',
     description: 'Buat nota & invoice profesional dalam 3 tap. Gratis dan tanpa daftar.',
   },
   edit: {
-    title: 'Edit Nota — InvoiGene',
+    title: 'Edit Nota — Notaku',
     description: 'Perbarui data nota dan kirim ulang ke pelanggan via WhatsApp.',
   },
   preview: {
-    title: 'Preview Nota — InvoiGene',
+    title: 'Preview Nota — Notaku',
     description: 'Pratinjau nota sebelum cetak struk thermal atau kirim ke pelanggan.',
   },
   history: {
-    title: 'Riwayat Nota — InvoiGene',
+    title: 'Riwayat Nota — Notaku',
     description: 'Cari, filter, dan kelola seluruh nota & invoice yang pernah dibuat.',
   },
   settings: {
-    title: 'Pengaturan Toko — InvoiGene',
-    description: 'Atur profil toko, logo, format struk, dan preferensi InvoiGene.',
+    title: 'Pengaturan Toko — Notaku',
+    description: 'Atur profil toko, logo, format struk, dan preferensi Notaku.',
   },
 };
 
@@ -111,9 +111,9 @@ const Index = () => {
     <div className="min-h-screen flex flex-col app-bg-pattern">
       <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-4 bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-foreground))] shadow-sm">
         <div className="flex items-center gap-2.5 min-w-0">
-          <img src={logoImg} alt="Logo InvoiGene" width={28} height={28} className="rounded-lg shrink-0" />
-          <div className="font-display text-base font-semibold tracking-tight truncate" aria-label={`Halaman ${pageTitles[page] || 'InvoiGene'}`}>
-            {pageTitles[page] || 'InvoiGene'}
+          <img src={logoImg} alt="Logo Notaku" width={28} height={28} className="rounded-lg shrink-0" />
+          <div className="font-display text-base font-semibold tracking-tight truncate" aria-label={`Halaman ${pageTitles[page] || 'Notaku'}`}>
+            {pageTitles[page] || 'Notaku'}
           </div>
         </div>
         <button
