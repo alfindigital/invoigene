@@ -9,14 +9,6 @@ import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { Sun, Moon } from 'lucide-react';
 import logoImg from '@/assets/logo.png';
 
-const pageTitles: Record<string, string> = {
-  dashboard: 'Dashboard',
-  new: 'Nota Baru',
-  edit: 'Edit Nota',
-  preview: 'Preview Nota',
-  history: 'Riwayat',
-  settings: 'Pengaturan',
-};
 
 const pageMeta: Record<string, { title: string; description: string }> = {
   dashboard: {
