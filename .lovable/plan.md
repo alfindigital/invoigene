@@ -1,10 +1,10 @@
 ## Tujuan
-Brand **InvoiGene** dipertahankan, tapi identitas visual dirapikan dan UI dirombak agar nyaman dipakai satu tangan di HP.
+Brand **Notaku** dipertahankan, tapi identitas visual dirapikan dan UI dirombak agar nyaman dipakai satu tangan di HP.
 
 ## 1. Brand & Ikon
-- **Nama**: InvoiGene (tetap, sudah konsisten di metadata, domain, sitemap).
+- **Nama**: Notaku (tetap, sudah konsisten di metadata, domain, sitemap).
 - **Logo baru**: ikon kotak rounded gradient Royal Blue (`#1E3A8A → #3B82F6`) dengan glyph nota + checkmark putih di tengah. Diset transparan untuk dipakai di header gelap & terang.
-- **Wordmark**: "InvoiGene" pakai Syne SemiBold, tagline "Nota cepat untuk UMKM" pakai Plus Jakarta Sans.
+- **Wordmark**: "Notaku" pakai Syne SemiBold, tagline "Nota cepat untuk UMKM" pakai Plus Jakarta Sans.
 - File yang di-generate:
   - `src/assets/logo.png` (logo penuh untuk header, transparan)
   - `public/favicon.png` (512×512, ganti `favicon.ico` lama)

@@ -1,12 +1,10 @@
 import { LayoutDashboard, History, Settings, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const leftItems = [
+const items = [
   { title: 'Beranda', key: 'dashboard', icon: LayoutDashboard },
   { title: 'Riwayat', key: 'history', icon: History },
-];
-
-const rightItems = [
+  { title: 'Nota Baru', key: 'new', icon: Plus },
   { title: 'Setelan', key: 'settings', icon: Settings },
 ];
 
@@ -51,49 +49,26 @@ function NavButton({
 }
 
 export function BottomNav({ activePage, onNavigate }: BottomNavProps) {
-  const isFabActive = activePage === 'new' || activePage === 'edit';
   return (
-    <>
-      {/* FAB — sits above the nav bar */}
-      <button
-        onClick={() => onNavigate('new')}
-        aria-label="Buat nota baru"
-        className={cn(
-          'fixed bottom-[58px] left-1/2 -translate-x-1/2 z-[60] flex items-center justify-center h-16 w-16 rounded-full',
-          'bg-gradient-brand text-primary-foreground shadow-2xl shadow-primary/40 ring-4 ring-background',
-          'transition-transform tap-scale hover:scale-105',
-          isFabActive && 'scale-110',
-        )}
-        style={{ bottom: `calc(58px + env(safe-area-inset-bottom, 0px))` }}
-      >
-        <Plus className="h-8 w-8" strokeWidth={2.5} />
-      </button>
-
-      <nav
-        className="fixed bottom-0 left-0 right-0 z-50 bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-foreground))] safe-area-bottom shadow-[0_-2px_24px_rgba(0,0,0,0.18)]"
-        aria-label="Navigasi utama"
-      >
-        <div className="flex items-stretch h-[64px] max-w-2xl mx-auto px-2">
-          {leftItems.map((item) => (
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-foreground))] safe-area-bottom shadow-[0_-2px_24px_rgba(0,0,0,0.18)]"
+      aria-label="Navigasi utama"
+    >
+      <div className="flex items-stretch h-[64px] max-w-2xl mx-auto px-2">
+        {items.map((item) => {
+          const isActive =
+            activePage === item.key ||
+            (item.key === 'new' && (activePage === 'new' || activePage === 'edit'));
+          return (
             <NavButton
               key={item.key}
               item={item}
-              isActive={activePage === item.key}
+              isActive={isActive}
               onNavigate={onNavigate}
             />
-          ))}
-          {/* spacer for FAB */}
-          <div className="w-20 shrink-0" aria-hidden="true" />
-          {rightItems.map((item) => (
-            <NavButton
-              key={item.key}
-              item={item}
-              isActive={activePage === item.key}
-              onNavigate={onNavigate}
-            />
-          ))}
-        </div>
-      </nav>
-    </>
+          );
+        })}
+      </div>
+    </nav>
   );
 }
