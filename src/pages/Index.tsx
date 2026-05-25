@@ -112,12 +112,7 @@ const Index = () => {
       <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-4 bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-foreground))] shadow-sm">
         <div className="flex items-center gap-2.5 min-w-0">
           <img src={logoImg} alt="Logo Notaku" width={32} height={32} className="rounded-lg shrink-0" />
-          <div className="flex flex-col min-w-0 leading-tight">
-            <span className="font-display text-base font-bold tracking-tight">Notaku</span>
-            <span className="text-[11px] text-white/70 font-medium truncate" aria-label={`Halaman ${pageTitles[page] || ''}`}>
-              {pageTitles[page] || ''}
-            </span>
-          </div>
+          <span className="font-display text-base font-bold tracking-tight">Notaku</span>
         </div>
         <button
           onClick={() => setDarkMode(!darkMode)}
