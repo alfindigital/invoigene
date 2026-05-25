@@ -5,6 +5,7 @@ import InvoiceForm from '@/pages/InvoiceForm';
 import InvoiceHistory from '@/pages/InvoiceHistory';
 import InvoicePreview from '@/components/InvoicePreview';
 import Settings from '@/pages/Settings';
+import Items from '@/pages/Items';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { Sun, Moon } from 'lucide-react';
 import logoImg from '@/assets/logo.png';
@@ -34,6 +35,10 @@ const pageMeta: Record<string, { title: string; description: string }> = {
   settings: {
     title: 'Pengaturan Toko — Notaku',
     description: 'Atur profil toko, logo, format struk, dan preferensi Notaku.',
+  },
+  items: {
+    title: 'Katalog Item — Notaku',
+    description: 'Kelola katalog produk yang sering dijual agar nota bisa dibuat sekali tap.',
   },
 };
 
@@ -94,6 +99,7 @@ const Index = () => {
         ? <InvoicePreview invoice={previewInvoice} profile={profile} onBack={() => navigate('history')} />
         : <InvoiceHistory onNavigate={navigate} onEdit={handleEdit} onPreview={handlePreview} />;
       case 'history': return <InvoiceHistory onNavigate={navigate} onEdit={handleEdit} onPreview={handlePreview} />;
+      case 'items': return <Items />;
       case 'settings': return <Settings />;
       default: return <Dashboard onNavigate={navigate} />;
     }
