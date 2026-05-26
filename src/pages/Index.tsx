@@ -76,14 +76,12 @@ const Index = () => {
 
   const navigate = (p: string) => {
     if (p === displayedPage && p !== 'edit' && p !== 'preview') return;
-    setIsTransitioning(true);
     if (p !== 'edit' && p !== 'preview') { setEditId(null); setPreviewId(null); }
+    setIsTransitioning(true);
+    setPage(p);
+    setDisplayedPage(p);
     clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      setPage(p);
-      setDisplayedPage(p);
-      setIsTransitioning(false);
-    }, 150);
+    timeoutRef.current = setTimeout(() => setIsTransitioning(false), 150);
   };
 
   const handleEdit = (id: string) => { setEditId(id); setPage('edit'); setDisplayedPage('edit'); };
