@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
-import { calcInvoiceTotals, Invoice } from '@/types/invoice';
+import { calcInvoiceTotals } from '@/types/invoice';
 import { formatCurrency, formatDate, getStatusLabel, getStatusColor, getBuyerDisplay, todayISO } from '@/lib/formatters';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,7 @@ function getDayLabel(dateStr: string): string {
 }
 
 export default function Dashboard({ onNavigate }: DashboardProps) {
-  const { invoices, addInvoice, profile } = useInvoiceStore();
+  const { invoices, profile } = useInvoiceStore();
   const { toast } = useToast();
   const [chartRange, setChartRange] = useState<ChartRange>('7d');
   const [exportRange, setExportRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
