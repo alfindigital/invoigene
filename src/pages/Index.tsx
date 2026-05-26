@@ -127,7 +127,7 @@ const Index = () => {
         </div>
       </main>
 
-      <BottomNav activePage={page} onNavigate={navigate} />
+      <BottomNav activePage={displayedPage} onNavigate={navigate} />
     </div>
   );
 };
