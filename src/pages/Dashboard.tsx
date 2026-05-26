@@ -30,51 +30,6 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
 
   const today = todayISO();
 
-  const seedDummyData = () => {
-    const dummyInvoices: Invoice[] = [
-      {
-        id: crypto.randomUUID(), invoiceNumber: 'NT-2026-0001', status: 'paid', currency: 'IDR',
-        invoiceDate: today, dueDate: today, notes: '',
-        buyerName: 'Pak Budi', buyerPhone: '081234567890',
-        lineItems: [
-          { id: crypto.randomUUID(), description: 'Nasi Goreng Spesial', quantity: 2, unit: 'porsi', unitPrice: 18000, discountType: 'fixed', discountValue: 0 },
-          { id: crypto.randomUUID(), description: 'Es Teh Manis', quantity: 3, unit: 'gelas', unitPrice: 5000, discountType: 'fixed', discountValue: 0 },
-        ],
-        additionalDiscountType: 'fixed', additionalDiscountValue: 0, taxType: 'none', customTaxRate: 0, shippingCost: 0, paidDate: today,
-      },
-      {
-        id: crypto.randomUUID(), invoiceNumber: 'NT-2026-0002', status: 'paid', currency: 'IDR',
-        invoiceDate: today, dueDate: today, notes: '',
-        buyerName: 'Bu Siti', buyerPhone: '087654321098',
-        lineItems: [
-          { id: crypto.randomUUID(), description: 'Bakso Urat', quantity: 3, unit: 'mangkok', unitPrice: 15000, discountType: 'fixed', discountValue: 0 },
-          { id: crypto.randomUUID(), description: 'Es Jeruk', quantity: 2, unit: 'gelas', unitPrice: 7000, discountType: 'fixed', discountValue: 0 },
-        ],
-        additionalDiscountType: 'fixed', additionalDiscountValue: 0, taxType: 'none', customTaxRate: 0, shippingCost: 0, paidDate: today,
-      },
-      {
-        id: crypto.randomUUID(), invoiceNumber: 'NT-2026-0003', status: 'sent', currency: 'IDR',
-        invoiceDate: today, dueDate: today, notes: 'Pesan antar',
-        buyerName: 'Mas Agus', buyerPhone: '089876543210',
-        lineItems: [
-          { id: crypto.randomUUID(), description: 'Mie Ayam Bakso', quantity: 5, unit: 'porsi', unitPrice: 15000, discountType: 'fixed', discountValue: 0 },
-        ],
-        additionalDiscountType: 'fixed', additionalDiscountValue: 0, taxType: 'none', customTaxRate: 0, shippingCost: 5000,
-      },
-      {
-        id: crypto.randomUUID(), invoiceNumber: 'NT-2026-0004', status: 'draft', currency: 'IDR',
-        invoiceDate: today, dueDate: today, notes: '',
-        buyerName: '', buyerPhone: '',
-        lineItems: [
-          { id: crypto.randomUUID(), description: 'Nasi Goreng Spesial', quantity: 1, unit: 'porsi', unitPrice: 18000, discountType: 'fixed', discountValue: 0 },
-          { id: crypto.randomUUID(), description: 'Es Teh Manis', quantity: 1, unit: 'gelas', unitPrice: 5000, discountType: 'fixed', discountValue: 0 },
-        ],
-        additionalDiscountType: 'fixed', additionalDiscountValue: 0, taxType: 'none', customTaxRate: 0, shippingCost: 0,
-      },
-    ];
-    dummyInvoices.forEach(inv => addInvoice(inv));
-    toast({ title: 'Berhasil', description: `${dummyInvoices.length} nota dummy ditambahkan` });
-  };
 
   const stats = useMemo(() => {
     return invoices.reduce(
@@ -162,11 +117,6 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
     <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
-        {invoices.length === 0 && (
-          <Button size="sm" variant="outline" onClick={seedDummyData}>
-            <Database className="mr-1.5 h-4 w-4" /> Data Contoh
-          </Button>
-        )}
       </div>
 
       {/* Big CTA */}
