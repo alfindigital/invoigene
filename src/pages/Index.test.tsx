@@ -1,9 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, act } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import Index from './Index';
 
-// Mock heavy page components to keep the integration test focused on routing.
 vi.mock('@/pages/Dashboard', () => ({
   default: () => <div data-testid="page-dashboard">Dashboard</div>,
 }));
@@ -27,66 +25,50 @@ vi.mock('@/hooks/useInvoiceStore', () => ({
 }));
 vi.mock('@/assets/logo.png', () => ({ default: 'logo.png' }));
 
-describe('Index — sinkronisasi navigasi cepat saat transisi 150ms', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-  });
+const click = (label: string) =>
+  fireEvent.click(screen.getByRole('button', { name: label }));
 
+describe('Index — sinkronisasi navigasi cepat saat transisi 150ms', () => {
+  beforeEach(() => vi.useFakeTimers());
   afterEach(() => {
-    vi.runOnlyPendingTimers();
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
     vi.useRealTimers();
   });
 
-  const getUser = () =>
-    userEvent.setup({ advanceTimers: vi.advanceTimersByTime.bind(vi) });
-
-  const clickTab = async (user: ReturnType<typeof getUser>, label: string) => {
-    await user.click(screen.getByRole('button', { name: label }));
-  };
-
-  it('langsung menampilkan halaman terakhir yang diklik tanpa menunggu transisi', async () => {
-    const user = getUser();
+  it('langsung menampilkan halaman terakhir yang diklik tanpa menunggu transisi', () => {
     render(<Index />);
-
-    // Default: dashboard
     expect(screen.getByTestId('page-dashboard')).toBeInTheDocument();
 
-    // Klik cepat berurutan dalam <150ms
-    await clickTab(user, 'Riwayat');
-    await clickTab(user, 'Item');
-    await clickTab(user, 'Setelan');
+    // Tiga klik cepat berturut-turut dalam window 150ms
+    click('Riwayat');
+    act(() => void vi.advanceTimersByTime(20));
+    click('Item');
+    act(() => void vi.advanceTimersByTime(20));
+    click('Setelan');
 
-    // displayedPage (BottomNav active) HARUS sinkron dengan page (rendered)
-    // pada klik terakhir, bukan tertinggal pada klik pertama.
+    // page (rendered) sinkron dengan displayedPage (active tab) pada klik terakhir
     expect(screen.getByTestId('page-settings')).toBeInTheDocument();
     expect(screen.queryByTestId('page-history')).not.toBeInTheDocument();
     expect(screen.queryByTestId('page-items')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Setelan' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
 
-    const setelanBtn = screen.getByRole('button', { name: 'Setelan' });
-    expect(setelanBtn).toHaveAttribute('aria-current', 'page');
-
-    // Hanya satu tab aktif
-    const activeButtons = screen
+    const active = screen
       .getAllByRole('button')
       .filter((b) => b.getAttribute('aria-current') === 'page');
-    expect(activeButtons).toHaveLength(1);
+    expect(active).toHaveLength(1);
   });
 
-  it('mempertahankan sinkronisasi displayedPage & page setelah timer 150ms selesai', async () => {
-    const user = getUser();
+  it('sinkron tetap stabil setelah timer 150ms selesai', () => {
     render(<Index />);
-
-    await clickTab(user, 'Riwayat');
-    // Sebelum 150ms berlalu, klik lagi
-    act(() => {
-      vi.advanceTimersByTime(50);
-    });
-    await clickTab(user, 'Item');
-
-    // Selesaikan transisi
-    act(() => {
-      vi.advanceTimersByTime(200);
-    });
+    click('Riwayat');
+    act(() => void vi.advanceTimersByTime(50));
+    click('Item');
+    act(() => void vi.advanceTimersByTime(300));
 
     expect(screen.getByTestId('page-items')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Item' })).toHaveAttribute(
@@ -95,36 +77,33 @@ describe('Index — sinkronisasi navigasi cepat saat transisi 150ms', () => {
     );
   });
 
-  it('FAB klik cepat tetap mengarahkan ke halaman new dan menandai FAB aktif', async () => {
-    const user = getUser();
+  it('FAB selama transisi tetap mengarahkan ke new dan menandai FAB aktif', () => {
     render(<Index />);
-
-    await clickTab(user, 'Riwayat');
-    await clickTab(user, 'Buat nota baru');
+    click('Riwayat');
+    act(() => void vi.advanceTimersByTime(30));
+    click('Buat nota baru');
 
     expect(screen.getByTestId('page-form')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Buat nota baru' })).toHaveAttribute(
       'aria-current',
       'page',
     );
-    // Riwayat tidak boleh tetap aktif
-    expect(screen.getByRole('button', { name: 'Riwayat' })).not.toHaveAttribute(
-      'aria-current',
-      'page',
-    );
+    expect(
+      screen.getByRole('button', { name: 'Riwayat' }),
+    ).not.toHaveAttribute('aria-current', 'page');
   });
 
-  it('klik tab yang sama dua kali cepat tidak menyebabkan desync', async () => {
-    const user = getUser();
+  it('klik cepat bolak-balik tidak meninggalkan dua tab aktif', () => {
     render(<Index />);
-
-    await clickTab(user, 'Riwayat');
-    await clickTab(user, 'Riwayat');
+    click('Riwayat');
+    click('Setelan');
+    click('Riwayat');
 
     expect(screen.getByTestId('page-history')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Riwayat' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
+    const active = screen
+      .getAllByRole('button')
+      .filter((b) => b.getAttribute('aria-current') === 'page');
+    expect(active).toHaveLength(1);
+    expect(active[0]).toHaveAccessibleName('Riwayat');
   });
 });
