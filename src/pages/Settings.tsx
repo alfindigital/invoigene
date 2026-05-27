@@ -1,24 +1,21 @@
 import { useState } from 'react';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { BusinessProfile } from '@/types/invoice';
-import { formatCurrency } from '@/lib/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Save, Plus, Trash2, Upload, ChevronDown, ChevronUp } from 'lucide-react';
+import { Save, Upload, ChevronDown, ChevronUp } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 export default function Settings() {
   const { toast } = useToast();
-  const { profile, setProfile, settings, setSettings, catalog, addCatalogItem, deleteCatalogItem } = useInvoiceStore();
+  const { profile, setProfile, settings, setSettings } = useInvoiceStore();
 
   const [p, setP] = useState<BusinessProfile>({ ...profile });
-  const [newCat, setNewCat] = useState({ description: '', unit: 'pcs', unitPrice: 0 });
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,58 +31,10 @@ export default function Settings() {
     toast({ title: '✅ Tersimpan', description: 'Profil usaha berhasil disimpan' });
   };
 
-  const handleAddCatalog = () => {
-    if (!newCat.description) return;
-    addCatalogItem({ id: crypto.randomUUID(), ...newCat });
-    setNewCat({ description: '', unit: 'pcs', unitPrice: 0 });
-    toast({ title: '✅ Ditambahkan', description: 'Item katalog berhasil ditambahkan' });
-  };
-
   return (
     <div className="space-y-4 max-w-lg mx-auto">
       <h1 className="text-xl font-bold text-foreground">Pengaturan</h1>
 
-      {/* Catalog — primary feature */}
-      <Card>
-        <CardHeader><CardTitle>📦 Katalog Produk</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-xs text-muted-foreground">Tambahkan produk yang sering dijual agar bisa ditambah ke nota dengan sekali tap.</p>
-          <div className="grid gap-2 grid-cols-[1fr_60px_80px_auto] items-end">
-            <div className="space-y-1">
-              <Label className="text-xs">Nama</Label>
-              <Input value={newCat.description} onChange={e => setNewCat(prev => ({ ...prev, description: e.target.value }))} placeholder="Nasi Goreng..." className="h-9" />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Satuan</Label>
-              <Input value={newCat.unit} onChange={e => setNewCat(prev => ({ ...prev, unit: e.target.value }))} className="h-9" />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Harga</Label>
-              <Input type="number" value={newCat.unitPrice} onChange={e => setNewCat(prev => ({ ...prev, unitPrice: Number(e.target.value) }))} className="h-9" />
-            </div>
-            <Button size="icon" className="h-9 w-9" onClick={handleAddCatalog} disabled={!newCat.description} aria-label="Tambah item katalog">
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-          {catalog.length > 0 && (
-            <div className="space-y-1.5">
-              {catalog.map(item => (
-                <div key={item.id} className="flex items-center justify-between rounded-lg border p-2.5 text-sm">
-                  <div>
-                    <span className="font-medium">{item.description}</span>
-                    <span className="text-muted-foreground ml-1">· {item.unit} · {formatCurrency(item.unitPrice)}</span>
-                  </div>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={() => deleteCatalogItem(item.id)} aria-label={`Hapus ${item.description}`}>
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Business Profile — simplified */}
       <Card>
         <CardHeader><CardTitle>🏪 Profil Usaha</CardTitle></CardHeader>
         <CardContent className="space-y-3">
@@ -109,7 +58,6 @@ export default function Settings() {
             <Input value={p.phone} onChange={e => setP(prev => ({ ...prev, phone: e.target.value }))} className="h-10" placeholder="08xx..." />
           </div>
 
-          {/* Advanced profile fields */}
           <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
             <CollapsibleTrigger asChild>
               <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors w-full py-1">
@@ -151,7 +99,6 @@ export default function Settings() {
         </CardContent>
       </Card>
 
-      {/* Invoice Number Format */}
       <Card>
         <CardHeader><CardTitle>🔢 Format Nomor Nota</CardTitle></CardHeader>
         <CardContent className="space-y-3">
