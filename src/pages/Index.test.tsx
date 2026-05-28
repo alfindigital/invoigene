@@ -106,4 +106,65 @@ describe('Index — sinkronisasi navigasi cepat saat transisi 150ms', () => {
     expect(active).toHaveLength(1);
     expect(active[0]).toHaveAccessibleName('Riwayat');
   });
+
+  it('stress: puluhan klik cepat acak tidak membuat tab tertukar dan selalu hanya satu aktif', () => {
+    render(<Index />);
+    const tabNames = ['Beranda', 'Riwayat', 'Item', 'Setelan'] as const;
+    const labelToTestId: Record<string, string> = {
+      Beranda: 'page-dashboard',
+      Riwayat: 'page-history',
+      Item: 'page-items',
+      Setelan: 'page-settings',
+    };
+    const clicks = 30;
+
+    for (let i = 0; i < clicks; i++) {
+      const label = tabNames[i % tabNames.length];
+      act(() => void vi.advanceTimersByTime(5));
+      click(label);
+
+      const activeButtons = screen
+        .getAllByRole('button')
+        .filter((b) => b.getAttribute('aria-current') === 'page');
+
+      expect(activeButtons).toHaveLength(1);
+      expect(activeButtons[0]).toHaveAccessibleName(label);
+      expect(screen.getByTestId(labelToTestId[label])).toBeInTheDocument();
+    }
+  });
+
+  it('stress: klik acak dengan interval 10ms tetap sinkron page dan tab', () => {
+    render(<Index />);
+    const tabNames = ['Riwayat', 'Item', 'Setelan', 'Beranda'];
+    const sequence = Array.from({ length: 24 }, (_, i) => tabNames[i % tabNames.length]);
+
+    for (const label of sequence) {
+      act(() => void vi.advanceTimersByTime(10));
+      click(label);
+    }
+
+    const last = sequence[sequence.length - 1];
+    const activeButtons = screen
+      .getAllByRole('button')
+      .filter((b) => b.getAttribute('aria-current') === 'page');
+    expect(activeButtons).toHaveLength(1);
+    expect(activeButtons[0]).toHaveAccessibleName(last);
+  });
+
+  it('stress: klik FAB dan tab bergantian dalam loop cepat', () => {
+    render(<Index />);
+    const cycle = ['Riwayat', 'Buat nota baru', 'Item', 'Buat nota baru'] as const;
+
+    for (let i = 0; i < 16; i++) {
+      const label = cycle[i % cycle.length];
+      act(() => void vi.advanceTimersByTime(8));
+      click(label);
+
+      const activeButtons = screen
+        .getAllByRole('button')
+        .filter((b) => b.getAttribute('aria-current') === 'page');
+      expect(activeButtons).toHaveLength(1);
+      expect(activeButtons[0]).toHaveAccessibleName(label);
+    }
+  });
 });
