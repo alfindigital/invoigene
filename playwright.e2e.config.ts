@@ -19,6 +19,20 @@ export default defineConfig({
     viewport: { width: 414, height: 896 },
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Pixel 5'] } },
+    // Mobile (Android)
+    { name: 'mobile-pixel5', use: { ...devices['Pixel 5'] } },
+    // Mobile (iOS) — viewport lebih kecil & DPR berbeda
+    { name: 'mobile-iphone12', use: { ...devices['iPhone 12'] } },
+    // Tablet
+    { name: 'tablet-ipad', use: { ...devices['iPad (gen 7)'] } },
+    // Desktop
+    {
+      name: 'desktop-chrome',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1366, height: 768 } },
+    },
+    {
+      name: 'desktop-large',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1920, height: 1080 } },
+    },
   ],
 });
