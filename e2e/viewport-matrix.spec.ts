@@ -31,7 +31,7 @@ for (const vp of VIEWPORTS) {
 
     test.beforeEach(async ({ page }) => {
       await page.addInitScript(() => {
-        try { window.localStorage.clear(); } catch {}
+        try { window.localStorage.clear(); } catch { /* ignore */ }
       });
       await page.goto('/');
       await expect(tab(page, 'Beranda')).toBeVisible();
