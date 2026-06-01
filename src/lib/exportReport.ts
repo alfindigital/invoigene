@@ -1,6 +1,5 @@
 import { Invoice, calcInvoiceTotals } from '@/types/invoice';
 import { formatCurrency, formatDate, getBuyerDisplay, getStatusLabel } from './formatters';
-import jsPDF from 'jspdf';
 
 interface ReportRow {
   invoiceNumber: string;
