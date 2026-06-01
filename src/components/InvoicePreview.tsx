@@ -76,6 +76,10 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
 
   const handleThermalPdf = async () => {
     if (!thermalRef.current) return;
+    const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+      import('html2canvas'),
+      import('jspdf'),
+    ]);
     const canvas = await html2canvas(thermalRef.current, { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
     const imgData = canvas.toDataURL('image/png');
     const widthMm = paperWidth === '58mm' ? 58 : 80;
