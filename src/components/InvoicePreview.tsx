@@ -4,8 +4,6 @@ import { formatCurrency, formatDate, getBuyerDisplay, buildWhatsAppNotaMessage, 
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Download, Printer, MessageCircle, Receipt } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import ThermalReceipt, { type PaperWidth } from './ThermalReceipt';
 
@@ -26,6 +24,10 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
 
   const handleDownloadPdf = async () => {
     if (!printRef.current) return;
+    const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+      import('html2canvas'),
+      import('jspdf'),
+    ]);
     const canvas = await html2canvas(printRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
     const imgData = canvas.toDataURL('image/png');
     const pdf = new jsPDF('p', 'mm', 'a4');
@@ -74,6 +76,10 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
 
   const handleThermalPdf = async () => {
     if (!thermalRef.current) return;
+    const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+      import('html2canvas'),
+      import('jspdf'),
+    ]);
     const canvas = await html2canvas(thermalRef.current, { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
     const imgData = canvas.toDataURL('image/png');
     const widthMm = paperWidth === '58mm' ? 58 : 80;
