@@ -334,7 +334,7 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
             </div>
             <div className="space-y-1">
               <Label className="text-xs">Pajak</Label>
-              <Select value={taxType} onValueChange={v => setTaxType(v as any)}>
+              <Select value={taxType} onValueChange={v => setTaxType(v as 'ppn11' | 'custom' | 'none')}>
                 <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Tanpa Pajak</SelectItem>
