@@ -122,7 +122,13 @@ const Index = () => {
 
       <main className="flex-1 px-4 md:px-8 lg:px-12 py-5 pb-32 overflow-auto max-w-5xl mx-auto w-full">
         <div className={`transition-all duration-200 ease-out ${isTransitioning ? 'opacity-0 translate-y-3 scale-[0.98]' : 'opacity-100 translate-y-0 scale-100'}`}>
-          {renderPage()}
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-20 text-muted-foreground" role="status" aria-label="Memuat halaman">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          }>
+            {renderPage()}
+          </Suspense>
         </div>
       </main>
 
