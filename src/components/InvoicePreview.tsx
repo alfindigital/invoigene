@@ -4,8 +4,6 @@ import { formatCurrency, formatDate, getBuyerDisplay, buildWhatsAppNotaMessage, 
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Download, Printer, MessageCircle, Receipt } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import ThermalReceipt, { type PaperWidth } from './ThermalReceipt';
 
