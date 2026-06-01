@@ -18,7 +18,7 @@ async function expectOnlyActive(page: Page, activeName: string) {
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
-    try { window.localStorage.clear(); } catch {}
+    try { window.localStorage.clear(); } catch { /* ignore */ }
   });
   await page.goto('/');
   // Pastikan app sudah mount
