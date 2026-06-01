@@ -1,14 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { BottomNav } from '@/components/BottomNav';
-import Dashboard from '@/pages/Dashboard';
-import InvoiceForm from '@/pages/InvoiceForm';
-import InvoiceHistory from '@/pages/InvoiceHistory';
-import InvoicePreview from '@/components/InvoicePreview';
-import Settings from '@/pages/Settings';
-import Items from '@/pages/Items';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Loader2 } from 'lucide-react';
 import logoImg from '@/assets/logo.png';
+
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const InvoiceForm = lazy(() => import('@/pages/InvoiceForm'));
+const InvoiceHistory = lazy(() => import('@/pages/InvoiceHistory'));
+const InvoicePreview = lazy(() => import('@/components/InvoicePreview'));
+const Settings = lazy(() => import('@/pages/Settings'));
+const Items = lazy(() => import('@/pages/Items'));
 
 
 const pageMeta: Record<string, { title: string; description: string }> = {
