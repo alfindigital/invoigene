@@ -56,8 +56,9 @@ export function exportCSV(invoices: Invoice[], filename?: string) {
   downloadBlob(blob, filename || `laporan-penjualan-${new Date().toISOString().split('T')[0]}.csv`);
 }
 
-export function exportPDF(invoices: Invoice[], companyName?: string, filename?: string) {
+export async function exportPDF(invoices: Invoice[], companyName?: string, filename?: string) {
   const rows = buildRows(invoices);
+  const { default: jsPDF } = await import('jspdf');
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
   const pageW = doc.internal.pageSize.getWidth();
