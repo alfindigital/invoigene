@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { Invoice, LineItem, InvoiceTemplate, calcLineItemSubtotal, calcInvoiceTotals, DiscountType } from '@/types/invoice';
 import { formatCurrency, generateInvoiceNumber, todayISO, addDays, buildWhatsAppNotaMessage, openWhatsApp } from '@/lib/formatters';
@@ -158,12 +158,26 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
     toast({ title: '📋 Template Dimuat', description: `"${tpl.name}" berhasil dimuat` });
   };
 
+  const stickyBarRef = useRef<HTMLDivElement>(null);
+  const [stickyHeight, setStickyHeight] = useState(220);
+
+  useEffect(() => {
+    const el = stickyBarRef.current;
+    if (!el) return;
+    const update = () => setStickyHeight(el.offsetHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener('resize', update);
+    return () => { ro.disconnect(); window.removeEventListener('resize', update); };
+  }, [lineItems.length, showAdvanced, shippingCost, taxType, totals.additionalDiscount, totals.taxRate]);
+
   if (showPreview) {
     return <InvoicePreview invoice={buildInvoice()} profile={profile} onBack={() => setShowPreview(false)} />;
   }
 
   return (
-    <div className="space-y-4 max-w-lg mx-auto pb-56">
+    <div className="space-y-4 max-w-lg mx-auto" style={{ paddingBottom: stickyHeight + 24 }}>
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-foreground">{existing ? 'Edit Nota' : 'Nota Baru'}</h1>
         {templates.length > 0 && (
@@ -359,7 +373,7 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
       </Collapsible>
 
       {/* Sticky total bar */}
-      <div className="sticky bottom-20 z-30 rounded-2xl border bg-card/95 backdrop-blur-lg shadow-xl p-4 space-y-3">
+      <div ref={stickyBarRef} className="sticky bottom-20 md:bottom-4 z-30 rounded-2xl border bg-card/95 backdrop-blur-lg shadow-xl p-4 space-y-3">
         <div className="space-y-1 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Subtotal ({lineItems.length} item)</span>
