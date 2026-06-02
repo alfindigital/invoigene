@@ -373,7 +373,7 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
       </Collapsible>
 
       {/* Sticky total bar */}
-      <div className="sticky bottom-20 z-30 rounded-2xl border bg-card/95 backdrop-blur-lg shadow-xl p-4 space-y-3">
+      <div ref={stickyBarRef} className="sticky bottom-20 md:bottom-4 z-30 rounded-2xl border bg-card/95 backdrop-blur-lg shadow-xl p-4 space-y-3">
         <div className="space-y-1 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Subtotal ({lineItems.length} item)</span>
