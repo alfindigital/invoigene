@@ -158,9 +158,26 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
     toast({ title: '📋 Template Dimuat', description: `"${tpl.name}" berhasil dimuat` });
   };
 
+  const stickyBarRef = useRef<HTMLDivElement>(null);
+  const [stickyHeight, setStickyHeight] = useState(220);
+
+  useEffect(() => {
+    const el = stickyBarRef.current;
+    if (!el) return;
+    const update = () => setStickyHeight(el.offsetHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener('resize', update);
+    return () => { ro.disconnect(); window.removeEventListener('resize', update); };
+  }, [lineItems.length, showAdvanced, shippingCost, taxType, totals.additionalDiscount, totals.taxRate]);
+
   if (showPreview) {
     return <InvoicePreview invoice={buildInvoice()} profile={profile} onBack={() => setShowPreview(false)} />;
   }
+
+  return (
+    <div className="space-y-4 max-w-lg mx-auto" style={{ paddingBottom: stickyHeight + 24 }}>
 
   return (
     <div className="space-y-4 max-w-lg mx-auto pb-56">
