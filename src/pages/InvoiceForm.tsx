@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { Invoice, LineItem, InvoiceTemplate, calcLineItemSubtotal, calcInvoiceTotals, DiscountType } from '@/types/invoice';
 import { formatCurrency, generateInvoiceNumber, todayISO, addDays, buildWhatsAppNotaMessage, openWhatsApp } from '@/lib/formatters';
