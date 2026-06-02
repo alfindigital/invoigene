@@ -163,7 +163,7 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
   }
 
   return (
-    <div className="space-y-4 max-w-lg mx-auto">
+    <div className="space-y-4 max-w-lg mx-auto pb-56">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-foreground">{existing ? 'Edit Nota' : 'Nota Baru'}</h1>
         {templates.length > 0 && (
