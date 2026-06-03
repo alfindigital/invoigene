@@ -50,23 +50,26 @@ function NavButton({
 
 export function BottomNav({ activePage, onNavigate }: BottomNavProps) {
   const isFabActive = activePage === 'new' || activePage === 'edit';
+  // Hide the FAB when the invoice form is open so it doesn't overlap the sticky total bar
+  const showFab = !isFabActive;
   return (
     <>
       {/* FAB — Nota Baru */}
-      <button
-        onClick={() => onNavigate('new')}
-        aria-label="Buat nota baru"
-        aria-current={isFabActive ? 'page' : undefined}
-        className={cn(
-          'fixed z-50 bottom-[76px] right-4 md:right-8 h-14 w-14 rounded-full',
-          'bg-primary text-primary-foreground shadow-[0_8px_24px_hsl(var(--primary)/0.45)]',
-          'flex items-center justify-center tap-scale transition-all',
-          'hover:shadow-[0_10px_28px_hsl(var(--primary)/0.55)]',
-          isFabActive && 'ring-4 ring-primary/30',
-        )}
-      >
-        <Plus className="h-7 w-7" strokeWidth={2.5} />
-      </button>
+      {showFab && (
+        <button
+          onClick={() => onNavigate('new')}
+          aria-label="Buat nota baru"
+          className={cn(
+            'fixed z-50 bottom-[76px] right-4 md:right-8 h-14 w-14 rounded-full',
+            'bg-primary text-primary-foreground shadow-[0_8px_24px_hsl(var(--primary)/0.45)]',
+            'flex items-center justify-center tap-scale transition-all',
+            'hover:shadow-[0_10px_28px_hsl(var(--primary)/0.55)]',
+          )}
+        >
+          <Plus className="h-7 w-7" strokeWidth={2.5} />
+        </button>
+      )}
+
 
       <nav
         className="fixed bottom-0 left-0 right-0 z-40 bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-foreground))] safe-area-bottom shadow-[0_-2px_24px_rgba(0,0,0,0.18)]"
