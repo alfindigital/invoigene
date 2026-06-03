@@ -166,6 +166,7 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
   };
 
   const stickyBarRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [stickyHeight, setStickyHeight] = useState(220);
 
   useEffect(() => {
@@ -178,6 +179,22 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
     window.addEventListener('resize', update);
     return () => { ro.disconnect(); window.removeEventListener('resize', update); };
   }, [lineItems.length, showAdvanced, shippingCost, taxType, totals.additionalDiscount, totals.taxRate]);
+
+  // Auto-scroll added/updated line item into view above the sticky bar
+  useEffect(() => {
+    const id = lastAddedIdRef.current;
+    if (!id) return;
+    const node = itemRefs.current[id];
+    if (!node) return;
+    const barH = stickyBarRef.current?.offsetHeight ?? stickyHeight;
+    const rect = node.getBoundingClientRect();
+    const safeBottom = window.innerHeight - barH - 16;
+    if (rect.bottom > safeBottom || rect.top < 80) {
+      const target = window.scrollY + rect.top - (window.innerHeight - barH) / 2;
+      window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+    }
+    lastAddedIdRef.current = null;
+  }, [lineItems, stickyHeight]);
 
   if (showPreview) {
     return <InvoicePreview invoice={buildInvoice()} profile={profile} onBack={() => setShowPreview(false)} />;
