@@ -50,25 +50,27 @@ function NavButton({
 
 export function BottomNav({ activePage, onNavigate }: BottomNavProps) {
   const isFabActive = activePage === 'new' || activePage === 'edit';
-  // Hide the FAB when the invoice form is open so it doesn't overlap the sticky total bar
-  const showFab = !isFabActive;
   return (
     <>
-      {/* FAB — Nota Baru */}
-      {showFab && (
-        <button
-          onClick={() => onNavigate('new')}
-          aria-label="Buat nota baru"
-          className={cn(
-            'fixed z-50 bottom-[76px] right-4 md:right-8 h-14 w-14 rounded-full',
-            'bg-primary text-primary-foreground shadow-[0_8px_24px_hsl(var(--primary)/0.45)]',
-            'flex items-center justify-center tap-scale transition-all',
-            'hover:shadow-[0_10px_28px_hsl(var(--primary)/0.55)]',
-          )}
-        >
-          <Plus className="h-7 w-7" strokeWidth={2.5} />
-        </button>
-      )}
+      {/* FAB — Nota Baru. Tetap di DOM (utk a11y & e2e), tapi disembunyikan
+          secara visual saat form aktif agar tidak menimpa sticky total bar. */}
+      <button
+        onClick={() => onNavigate('new')}
+        aria-label="Buat nota baru"
+        aria-current={isFabActive ? 'page' : undefined}
+        aria-hidden={isFabActive ? true : undefined}
+        tabIndex={isFabActive ? -1 : 0}
+        className={cn(
+          'fixed z-50 bottom-[76px] right-4 md:right-8 h-14 w-14 rounded-full',
+          'bg-primary text-primary-foreground shadow-[0_8px_24px_hsl(var(--primary)/0.45)]',
+          'flex items-center justify-center tap-scale transition-all',
+          'hover:shadow-[0_10px_28px_hsl(var(--primary)/0.55)]',
+          isFabActive && 'opacity-0 pointer-events-none scale-90',
+        )}
+      >
+        <Plus className="h-7 w-7" strokeWidth={2.5} />
+      </button>
+
 
 
       <nav
