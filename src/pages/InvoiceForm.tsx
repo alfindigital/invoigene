@@ -60,20 +60,27 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
       .map(([id]) => id);
   }, [store.invoices, catalog]);
 
+  const lastAddedIdRef = useRef<string | null>(null);
+
   const addFromCatalog = (catId: string) => {
     const cat = catalog.find(c => c.id === catId);
     if (!cat) return;
     const existingItem = lineItems.find(i => i.description === cat.description && i.unitPrice === cat.unitPrice);
     if (existingItem) {
+      lastAddedIdRef.current = existingItem.id;
       setLineItems(prev => prev.map(i => i.id === existingItem.id ? { ...i, quantity: i.quantity + 1 } : i));
     } else {
-      setLineItems(prev => [...prev, { id: crypto.randomUUID(), description: cat.description, quantity: 1, unit: cat.unit, unitPrice: cat.unitPrice, discountType: 'fixed', discountValue: 0 }]);
+      const newId = crypto.randomUUID();
+      lastAddedIdRef.current = newId;
+      setLineItems(prev => [...prev, { id: newId, description: cat.description, quantity: 1, unit: cat.unit, unitPrice: cat.unitPrice, discountType: 'fixed', discountValue: 0 }]);
     }
   };
 
   const handleManualAdd = () => {
     if (!manualDesc || !manualPrice) return;
-    setLineItems(prev => [...prev, { id: crypto.randomUUID(), description: manualDesc, quantity: 1, unit: 'pcs', unitPrice: Number(manualPrice), discountType: 'fixed', discountValue: 0 }]);
+    const newId = crypto.randomUUID();
+    lastAddedIdRef.current = newId;
+    setLineItems(prev => [...prev, { id: newId, description: manualDesc, quantity: 1, unit: 'pcs', unitPrice: Number(manualPrice), discountType: 'fixed', discountValue: 0 }]);
     setManualDesc('');
     setManualPrice('');
   };
