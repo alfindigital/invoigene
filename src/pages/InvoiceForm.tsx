@@ -60,20 +60,27 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
       .map(([id]) => id);
   }, [store.invoices, catalog]);
 
+  const lastAddedIdRef = useRef<string | null>(null);
+
   const addFromCatalog = (catId: string) => {
     const cat = catalog.find(c => c.id === catId);
     if (!cat) return;
     const existingItem = lineItems.find(i => i.description === cat.description && i.unitPrice === cat.unitPrice);
     if (existingItem) {
+      lastAddedIdRef.current = existingItem.id;
       setLineItems(prev => prev.map(i => i.id === existingItem.id ? { ...i, quantity: i.quantity + 1 } : i));
     } else {
-      setLineItems(prev => [...prev, { id: crypto.randomUUID(), description: cat.description, quantity: 1, unit: cat.unit, unitPrice: cat.unitPrice, discountType: 'fixed', discountValue: 0 }]);
+      const newId = crypto.randomUUID();
+      lastAddedIdRef.current = newId;
+      setLineItems(prev => [...prev, { id: newId, description: cat.description, quantity: 1, unit: cat.unit, unitPrice: cat.unitPrice, discountType: 'fixed', discountValue: 0 }]);
     }
   };
 
   const handleManualAdd = () => {
     if (!manualDesc || !manualPrice) return;
-    setLineItems(prev => [...prev, { id: crypto.randomUUID(), description: manualDesc, quantity: 1, unit: 'pcs', unitPrice: Number(manualPrice), discountType: 'fixed', discountValue: 0 }]);
+    const newId = crypto.randomUUID();
+    lastAddedIdRef.current = newId;
+    setLineItems(prev => [...prev, { id: newId, description: manualDesc, quantity: 1, unit: 'pcs', unitPrice: Number(manualPrice), discountType: 'fixed', discountValue: 0 }]);
     setManualDesc('');
     setManualPrice('');
   };
@@ -159,6 +166,7 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
   };
 
   const stickyBarRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [stickyHeight, setStickyHeight] = useState(220);
 
   useEffect(() => {
@@ -171,6 +179,22 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
     window.addEventListener('resize', update);
     return () => { ro.disconnect(); window.removeEventListener('resize', update); };
   }, [lineItems.length, showAdvanced, shippingCost, taxType, totals.additionalDiscount, totals.taxRate]);
+
+  // Auto-scroll added/updated line item into view above the sticky bar
+  useEffect(() => {
+    const id = lastAddedIdRef.current;
+    if (!id) return;
+    const node = itemRefs.current[id];
+    if (!node) return;
+    const barH = stickyBarRef.current?.offsetHeight ?? stickyHeight;
+    const rect = node.getBoundingClientRect();
+    const safeBottom = window.innerHeight - barH - 16;
+    if (rect.bottom > safeBottom || rect.top < 80) {
+      const target = window.scrollY + rect.top - (window.innerHeight - barH) / 2;
+      window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+    }
+    lastAddedIdRef.current = null;
+  }, [lineItems, stickyHeight]);
 
   if (showPreview) {
     return <InvoicePreview invoice={buildInvoice()} profile={profile} onBack={() => setShowPreview(false)} />;
@@ -288,7 +312,7 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
       {lineItems.length > 0 && (
         <div className="space-y-2 rounded-xl border bg-card p-3">
           {lineItems.map(item => (
-            <div key={item.id} className="flex items-center gap-2">
+            <div key={item.id} ref={(el) => { itemRefs.current[item.id] = el; }} className="flex items-center gap-2 scroll-mt-24">
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{item.description}</p>
                 <p className="text-xs text-muted-foreground">{formatCurrency(item.unitPrice)} × {item.quantity} = {formatCurrency(calcLineItemSubtotal(item))}</p>
