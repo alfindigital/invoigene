@@ -312,7 +312,7 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
       {lineItems.length > 0 && (
         <div className="space-y-2 rounded-xl border bg-card p-3">
           {lineItems.map(item => (
-            <div key={item.id} className="flex items-center gap-2">
+            <div key={item.id} ref={(el) => { itemRefs.current[item.id] = el; }} className="flex items-center gap-2 scroll-mt-24">
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{item.description}</p>
                 <p className="text-xs text-muted-foreground">{formatCurrency(item.unitPrice)} × {item.quantity} = {formatCurrency(calcLineItemSubtotal(item))}</p>
