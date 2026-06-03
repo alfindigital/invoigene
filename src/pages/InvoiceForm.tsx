@@ -172,13 +172,30 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
   useEffect(() => {
     const el = stickyBarRef.current;
     if (!el) return;
-    const update = () => setStickyHeight(el.offsetHeight);
+    let raf = 0;
+    const update = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        if (stickyBarRef.current) {
+          setStickyHeight(stickyBarRef.current.offsetHeight);
+        }
+      });
+    };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
     window.addEventListener('resize', update);
-    return () => { ro.disconnect(); window.removeEventListener('resize', update); };
-  }, [lineItems.length, showAdvanced, shippingCost, taxType, totals.additionalDiscount, totals.taxRate]);
+    window.addEventListener('orientationchange', update);
+    window.visualViewport?.addEventListener('resize', update);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      window.removeEventListener('resize', update);
+      window.removeEventListener('orientationchange', update);
+      window.visualViewport?.removeEventListener('resize', update);
+    };
+  }, []);
+
 
   // Auto-scroll added/updated line item into view above the sticky bar
   useEffect(() => {
