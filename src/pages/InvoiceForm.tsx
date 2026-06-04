@@ -96,6 +96,13 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
     }).filter(i => i.quantity > 0));
   };
 
+  const updateItem = (id: string, patch: Partial<LineItem>) => {
+    setLineItems(prev => prev.map(i => i.id === id ? { ...i, ...patch } : i));
+  };
+
+  const [openUnitId, setOpenUnitId] = useState<string | null>(null);
+  const [openDiscId, setOpenDiscId] = useState<string | null>(null);
+
   const removeItem = (id: string) => {
     setLineItems(prev => prev.filter(i => i.id !== id));
   };
