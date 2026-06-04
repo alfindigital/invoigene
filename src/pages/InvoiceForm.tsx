@@ -6,10 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Minus, Trash2, Save, MessageCircle, ChevronDown, ChevronUp, ShoppingBag, Flame, BookmarkPlus, BookMarked } from 'lucide-react';
+import { Plus, Minus, Trash2, Save, MessageCircle, ChevronDown, ChevronUp, ShoppingBag, Flame, BookmarkPlus, BookMarked, Percent } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import InvoicePreview from '@/components/InvoicePreview';
+
+const UNIT_OPTIONS = ['pcs', 'box', 'pack', 'kg', 'gr', 'liter', 'meter', 'lusin'];
 
 interface InvoiceFormProps {
   editId?: string | null;
