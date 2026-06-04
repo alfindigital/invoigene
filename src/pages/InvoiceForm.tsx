@@ -6,10 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Minus, Trash2, Save, MessageCircle, ChevronDown, ChevronUp, ShoppingBag, Flame, BookmarkPlus, BookMarked } from 'lucide-react';
+import { Plus, Minus, Trash2, Save, MessageCircle, ChevronDown, ChevronUp, ShoppingBag, Flame, BookmarkPlus, BookMarked, Percent } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import InvoicePreview from '@/components/InvoicePreview';
+
+const UNIT_OPTIONS = ['pcs', 'box', 'pack', 'kg', 'gr', 'liter', 'meter', 'lusin'];
 
 interface InvoiceFormProps {
   editId?: string | null;
@@ -92,6 +95,13 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
       return { ...i, quantity: newQty };
     }).filter(i => i.quantity > 0));
   };
+
+  const updateItem = (id: string, patch: Partial<LineItem>) => {
+    setLineItems(prev => prev.map(i => i.id === id ? { ...i, ...patch } : i));
+  };
+
+  const [openUnitId, setOpenUnitId] = useState<string | null>(null);
+  const [openDiscId, setOpenDiscId] = useState<string | null>(null);
 
   const removeItem = (id: string) => {
     setLineItems(prev => prev.filter(i => i.id !== id));
@@ -327,27 +337,108 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
 
       {/* Line items list */}
       {lineItems.length > 0 && (
-        <div className="space-y-2 rounded-xl border bg-card p-3">
-          {lineItems.map(item => (
-            <div key={item.id} ref={(el) => { itemRefs.current[item.id] = el; }} className="flex items-center gap-2 scroll-mt-24">
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{item.description}</p>
-                <p className="text-xs text-muted-foreground">{formatCurrency(item.unitPrice)} × {item.quantity} = {formatCurrency(calcLineItemSubtotal(item))}</p>
+        <div className="space-y-3 rounded-xl border bg-card p-3">
+          {lineItems.map(item => {
+            const discLabel = item.discountValue > 0
+              ? (item.discountType === 'percentage' ? `${item.discountValue}%` : formatCurrency(item.discountValue))
+              : '–';
+            return (
+            <div key={item.id} ref={(el) => { itemRefs.current[item.id] = el; }} className="space-y-1.5 scroll-mt-24">
+              <div className="flex items-center gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{item.description}</p>
+                  <p className="text-xs text-muted-foreground">{formatCurrency(item.unitPrice)} × {item.quantity} = {formatCurrency(calcLineItemSubtotal(item))}</p>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQty(item.id, -1)} aria-label={`Kurangi jumlah ${item.description}`}>
+                    <Minus className="h-3 w-3" />
+                  </Button>
+                  <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
+                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQty(item.id, 1)} aria-label={`Tambah jumlah ${item.description}`}>
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeItem(item.id)} aria-label={`Hapus ${item.description}`}>
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQty(item.id, -1)} aria-label={`Kurangi jumlah ${item.description}`}>
-                  <Minus className="h-3 w-3" />
-                </Button>
-                <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
-                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQty(item.id, 1)} aria-label={`Tambah jumlah ${item.description}`}>
-                  <Plus className="h-3 w-3" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeItem(item.id)} aria-label={`Hapus ${item.description}`}>
-                  <Trash2 className="h-3 w-3" />
-                </Button>
+              <div className="flex items-center gap-2 pl-1">
+                <Select
+                  open={openUnitId === item.id}
+                  onOpenChange={(o) => setOpenUnitId(o ? item.id : null)}
+                  value={UNIT_OPTIONS.includes(item.unit) ? item.unit : 'pcs'}
+                  onValueChange={(v) => updateItem(item.id, { unit: v })}
+                >
+                  <SelectTrigger className="h-7 w-24 text-xs px-2" aria-label={`Satuan ${item.description}`}>
+                    <SelectValue placeholder="unit" />
+                  </SelectTrigger>
+                  <SelectContent
+                    position="popper"
+                    sideOffset={6}
+                    collisionPadding={{ bottom: stickyHeight + 16, top: 16 }}
+                    onCloseAutoFocus={(e) => e.preventDefault()}
+                    onPointerDownOutside={(e) => {
+                      const t = e.target as HTMLElement | null;
+                      if (t && (t.closest('[data-sticky-bar]') || t.tagName === 'HTML')) e.preventDefault();
+                    }}
+                  >
+                    {UNIT_OPTIONS.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+
+                <Popover
+                  open={openDiscId === item.id}
+                  onOpenChange={(o) => setOpenDiscId(o ? item.id : null)}
+                >
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1" aria-label={`Potongan ${item.description}`}>
+                      <Percent className="h-3 w-3" /> {discLabel}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="start"
+                    sideOffset={6}
+                    collisionPadding={{ bottom: stickyHeight + 16, top: 16 }}
+                    className="w-56 p-3 space-y-2"
+                    onCloseAutoFocus={(e) => e.preventDefault()}
+                    onPointerDownOutside={(e) => {
+                      const t = e.target as HTMLElement | null;
+                      if (t && (t.closest('[data-sticky-bar]') || t.tagName === 'HTML')) e.preventDefault();
+                    }}
+                    onInteractOutside={(e) => {
+                      // Ignore non-pointer (e.g. focus/scroll) outside events
+                      if (e.detail.originalEvent.type !== 'pointerdown') e.preventDefault();
+                    }}
+                  >
+                    <Label className="text-xs">Potongan per item</Label>
+                    <div className="flex gap-1">
+                      <Select
+                        value={item.discountType}
+                        onValueChange={(v) => updateItem(item.id, { discountType: v as DiscountType })}
+                      >
+                        <SelectTrigger className="w-16 h-9"><SelectValue /></SelectTrigger>
+                        <SelectContent
+                          position="popper"
+                          collisionPadding={{ bottom: stickyHeight + 16, top: 16 }}
+                          onCloseAutoFocus={(e) => e.preventDefault()}
+                        >
+                          <SelectItem value="fixed">Rp</SelectItem>
+                          <SelectItem value="percentage">%</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={item.discountValue}
+                        onChange={(e) => updateItem(item.id, { discountValue: Number(e.target.value) })}
+                        className="h-9"
+                      />
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
-          ))}
+          );})}
         </div>
       )}
 
@@ -414,7 +505,8 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
       </Collapsible>
 
       {/* Sticky total bar */}
-      <div ref={stickyBarRef} className="sticky bottom-20 md:bottom-4 z-30 rounded-2xl border bg-card/95 backdrop-blur-lg shadow-xl p-4 space-y-3">
+      <div ref={stickyBarRef} data-sticky-bar className="sticky bottom-20 md:bottom-4 z-30 rounded-2xl border bg-card/95 backdrop-blur-lg shadow-xl p-4 space-y-3">
+
         <div className="space-y-1 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Subtotal ({lineItems.length} item)</span>
