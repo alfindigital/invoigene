@@ -16,10 +16,12 @@ interface InvoicePreviewProps {
 }
 
 export default function InvoicePreview({ invoice, profile, onBack }: InvoicePreviewProps) {
+  const { toast } = useToast();
   const printRef = useRef<HTMLDivElement>(null);
   const thermalRef = useRef<HTMLDivElement>(null);
   const totals = calcInvoiceTotals(invoice);
   const buyer = getBuyerDisplay(invoice);
+  const canWhatsApp = isValidIndonesianPhone(invoice.buyerPhone || '');
 
   const [thermalOpen, setThermalOpen] = useState(false);
   const [paperWidth, setPaperWidth] = useState<PaperWidth>('58mm');
