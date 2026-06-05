@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { Invoice, LineItem, InvoiceTemplate, calcLineItemSubtotal, calcInvoiceTotals, DiscountType } from '@/types/invoice';
 import { formatCurrency, generateInvoiceNumber, todayISO, addDays, buildWhatsAppNotaMessage, openWhatsApp } from '@/lib/formatters';
+import { isValidIndonesianPhone } from '@/lib/validators';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
