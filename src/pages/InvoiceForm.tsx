@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { z } from 'zod';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { Invoice, LineItem, InvoiceTemplate, calcLineItemSubtotal, calcInvoiceTotals, DiscountType } from '@/types/invoice';
 import { formatCurrency, generateInvoiceNumber, todayISO, addDays, buildWhatsAppNotaMessage, openWhatsApp } from '@/lib/formatters';
@@ -11,6 +12,39 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import InvoicePreview from '@/components/InvoicePreview';
+
+// Safely convert input strings to non-negative finite numbers (NaN/negatives → 0)
+const toNum = (v: string, max = 1_000_000_000): number => {
+  const n = Number(v);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return Math.min(n, max);
+};
+
+const lineItemSchema = z.object({
+  description: z.string().trim().min(1, 'Nama item wajib diisi').max(120, 'Nama item terlalu panjang'),
+  quantity: z.number().int('Jumlah harus bilangan bulat').positive('Jumlah harus > 0').max(100000, 'Jumlah terlalu besar'),
+  unitPrice: z.number().nonnegative('Harga tidak boleh negatif').max(1_000_000_000, 'Harga terlalu besar'),
+  discountValue: z.number().nonnegative('Potongan tidak boleh negatif'),
+  discountType: z.enum(['fixed', 'percentage']),
+}).refine(d => d.discountType !== 'percentage' || d.discountValue <= 100, {
+  message: 'Potongan persen maks 100%', path: ['discountValue'],
+}).refine(d => d.discountType !== 'fixed' || d.discountValue <= d.quantity * d.unitPrice, {
+  message: 'Potongan melebihi subtotal item', path: ['discountValue'],
+});
+
+const invoiceSchema = z.object({
+  buyerName: z.string().trim().max(100, 'Nama pembeli maks 100 karakter'),
+  buyerPhone: z.string().trim().max(20, 'No HP maks 20 karakter')
+    .refine(v => v === '' || /^[0-9+\-\s()]+$/.test(v), 'No HP hanya boleh angka & + - ( )'),
+  lineItems: z.array(lineItemSchema).min(1, 'Tambahkan minimal 1 item'),
+  additionalDiscountValue: z.number().nonnegative('Diskon tidak boleh negatif'),
+  additionalDiscountType: z.enum(['fixed', 'percentage']),
+  customTaxRate: z.number().min(0, 'Pajak tidak boleh negatif').max(100, 'Pajak maks 100%'),
+  shippingCost: z.number().nonnegative('Ongkir tidak boleh negatif').max(1_000_000_000),
+  notes: z.string().max(500, 'Catatan maks 500 karakter'),
+}).refine(d => d.additionalDiscountType !== 'percentage' || d.additionalDiscountValue <= 100, {
+  message: 'Diskon persen maks 100%', path: ['additionalDiscountValue'],
+});
 
 const UNIT_OPTIONS = ['pcs', 'box', 'pack', 'kg', 'gr', 'liter', 'meter', 'lusin'];
 
