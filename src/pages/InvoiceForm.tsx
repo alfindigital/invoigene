@@ -541,7 +541,7 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
           </div>
           <div className="space-y-1">
             <Label className="text-xs">Ongkos Kirim</Label>
-            <Input type="number" min={0} value={shippingCost} onChange={e => setShippingCost(Number(e.target.value))} className="h-9" />
+            <Input type="number" min={0} value={shippingCost} onChange={e => setShippingCost(toNum(e.target.value))} className="h-9" />
           </div>
           <div className="space-y-1">
             <Label className="text-xs">Catatan</Label>
