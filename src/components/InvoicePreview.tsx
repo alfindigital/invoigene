@@ -1,10 +1,12 @@
 import { useRef, useState } from 'react';
 import { Invoice, BusinessProfile, calcLineItemSubtotal, calcInvoiceTotals } from '@/types/invoice';
 import { formatCurrency, formatDate, getBuyerDisplay, buildWhatsAppNotaMessage, openWhatsApp } from '@/lib/formatters';
+import { isValidIndonesianPhone } from '@/lib/validators';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Download, Printer, MessageCircle, Receipt } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 import ThermalReceipt, { type PaperWidth } from './ThermalReceipt';
 
 interface InvoicePreviewProps {
