@@ -1,10 +1,12 @@
 import { useRef, useState } from 'react';
 import { Invoice, BusinessProfile, calcLineItemSubtotal, calcInvoiceTotals } from '@/types/invoice';
 import { formatCurrency, formatDate, getBuyerDisplay, buildWhatsAppNotaMessage, openWhatsApp } from '@/lib/formatters';
+import { isValidIndonesianPhone } from '@/lib/validators';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Download, Printer, MessageCircle, Receipt } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 import ThermalReceipt, { type PaperWidth } from './ThermalReceipt';
 
 interface InvoicePreviewProps {
@@ -14,10 +16,12 @@ interface InvoicePreviewProps {
 }
 
 export default function InvoicePreview({ invoice, profile, onBack }: InvoicePreviewProps) {
+  const { toast } = useToast();
   const printRef = useRef<HTMLDivElement>(null);
   const thermalRef = useRef<HTMLDivElement>(null);
   const totals = calcInvoiceTotals(invoice);
   const buyer = getBuyerDisplay(invoice);
+  const canWhatsApp = isValidIndonesianPhone(invoice.buyerPhone || '');
 
   const [thermalOpen, setThermalOpen] = useState(false);
   const [paperWidth, setPaperWidth] = useState<PaperWidth>('58mm');
@@ -103,7 +107,11 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
           <Receipt className="mr-1.5 h-4 w-4" /> Struk
         </Button>
         <Button size="sm" onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4" /> PDF</Button>
-        <Button size="sm" variant="outline" className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950" onClick={() => {
+        <Button size="sm" variant="outline" className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950 disabled:opacity-40 disabled:cursor-not-allowed" disabled={!canWhatsApp} onClick={() => {
+          if (!canWhatsApp) {
+            toast({ title: 'Periksa input', description: 'No. HP tidak valid atau kosong', variant: 'destructive' });
+            return;
+          }
           const msg = buildWhatsAppNotaMessage(invoice, totals.grandTotal, profile);
           openWhatsApp(invoice.buyerPhone || '', msg);
         }}>

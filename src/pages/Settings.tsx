@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { BusinessProfile } from '@/types/invoice';
+import { isValidIndonesianPhone, isValidEmail } from '@/lib/validators';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,7 +28,21 @@ export default function Settings() {
   };
 
   const saveProfile = () => {
-    setProfile(p);
+    const phone = p.phone.trim();
+    const email = p.email.trim();
+    if (!phone) {
+      toast({ title: 'Periksa input', description: 'No. HP wajib diisi', variant: 'destructive' });
+      return;
+    }
+    if (!isValidIndonesianPhone(phone)) {
+      toast({ title: 'Periksa input', description: 'Format No. HP tidak valid (min 10 digit, diawali 08/62)', variant: 'destructive' });
+      return;
+    }
+    if (email && !isValidEmail(email)) {
+      toast({ title: 'Periksa input', description: 'Format email tidak valid', variant: 'destructive' });
+      return;
+    }
+    setProfile({ ...p, phone, email });
     toast({ title: '✅ Tersimpan', description: 'Profil usaha berhasil disimpan' });
   };
 
@@ -54,7 +69,7 @@ export default function Settings() {
             <Input value={p.address} onChange={e => setP(prev => ({ ...prev, address: e.target.value }))} className="h-10" placeholder="Jl. Pasar No. 5..." />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">No. HP</Label>
+            <Label className="text-xs">No. HP <span className="text-destructive">*</span></Label>
             <Input value={p.phone} onChange={e => setP(prev => ({ ...prev, phone: e.target.value }))} className="h-10" placeholder="08xx..." />
           </div>
 

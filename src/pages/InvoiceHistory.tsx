@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { calcInvoiceTotals } from '@/types/invoice';
 import { formatCurrency, formatDate, getStatusLabel, getStatusColor, getBuyerDisplay, buildWhatsAppNotaMessage, openWhatsApp } from '@/lib/formatters';
+import { isValidIndonesianPhone } from '@/lib/validators';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -44,6 +45,10 @@ export default function InvoiceHistory({ onEdit, onPreview }: InvoiceHistoryProp
   });
 
   const handleWhatsApp = (inv: typeof invoices[0]) => {
+    if (!isValidIndonesianPhone(inv.buyerPhone || '')) {
+      toast({ title: 'Periksa input', description: 'No. HP tidak valid atau kosong', variant: 'destructive' });
+      return;
+    }
     const { grandTotal } = calcInvoiceTotals(inv);
     const msg = buildWhatsAppNotaMessage(inv, grandTotal, profile);
     openWhatsApp(inv.buyerPhone || '', msg);

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { Invoice, LineItem, InvoiceTemplate, calcLineItemSubtotal, calcInvoiceTotals, DiscountType } from '@/types/invoice';
 import { formatCurrency, generateInvoiceNumber, todayISO, addDays, buildWhatsAppNotaMessage, openWhatsApp } from '@/lib/formatters';
+import { isValidIndonesianPhone } from '@/lib/validators';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,8 +35,8 @@ const lineItemSchema = z.object({
 
 const invoiceSchema = z.object({
   buyerName: z.string().trim().max(100, 'Nama pembeli maks 100 karakter'),
-  buyerPhone: z.string().trim().max(20, 'No HP maks 20 karakter')
-    .refine(v => v === '' || /^[0-9+\-\s()]+$/.test(v), 'No HP hanya boleh angka & + - ( )'),
+  buyerPhone: z.string().trim().min(1, 'No. HP wajib diisi').max(20, 'No. HP maks 20 karakter')
+    .refine(v => isValidIndonesianPhone(v), 'Format No. HP tidak valid (min 10 digit, diawali 08/62)'),
   lineItems: z.array(lineItemSchema).min(1, 'Tambahkan minimal 1 item'),
   additionalDiscountValue: z.number().nonnegative('Diskon tidak boleh negatif'),
   additionalDiscountType: z.enum(['fixed', 'percentage']),
@@ -313,7 +314,7 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
           <Input value={buyerName} onChange={e => setBuyerName(e.target.value)} placeholder="Pak Budi..." className="h-10" />
         </div>
         <div className="space-y-1">
-          <Label className="text-xs text-muted-foreground">No. HP (opsional)</Label>
+          <Label className="text-xs text-muted-foreground">No. HP <span className="text-destructive">*</span></Label>
           <Input value={buyerPhone} onChange={e => setBuyerPhone(e.target.value)} placeholder="08xx..." className="h-10" />
         </div>
       </div>
