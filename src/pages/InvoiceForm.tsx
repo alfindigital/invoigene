@@ -314,7 +314,7 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
           <Input value={buyerName} onChange={e => setBuyerName(e.target.value)} placeholder="Pak Budi..." className="h-10" />
         </div>
         <div className="space-y-1">
-          <Label className="text-xs text-muted-foreground">No. HP (opsional)</Label>
+          <Label className="text-xs text-muted-foreground">No. HP <span className="text-destructive">*</span></Label>
           <Input value={buyerPhone} onChange={e => setBuyerPhone(e.target.value)} placeholder="08xx..." className="h-10" />
         </div>
       </div>
