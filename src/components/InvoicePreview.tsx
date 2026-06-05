@@ -107,7 +107,11 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
           <Receipt className="mr-1.5 h-4 w-4" /> Struk
         </Button>
         <Button size="sm" onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4" /> PDF</Button>
-        <Button size="sm" variant="outline" className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950" onClick={() => {
+        <Button size="sm" variant="outline" className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950 disabled:opacity-40 disabled:cursor-not-allowed" disabled={!canWhatsApp} onClick={() => {
+          if (!canWhatsApp) {
+            toast({ title: 'Periksa input', description: 'No. HP tidak valid atau kosong', variant: 'destructive' });
+            return;
+          }
           const msg = buildWhatsAppNotaMessage(invoice, totals.grandTotal, profile);
           openWhatsApp(invoice.buyerPhone || '', msg);
         }}>
