@@ -69,7 +69,7 @@ export default function Settings() {
             <Input value={p.address} onChange={e => setP(prev => ({ ...prev, address: e.target.value }))} className="h-10" placeholder="Jl. Pasar No. 5..." />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">No. HP</Label>
+            <Label className="text-xs">No. HP <span className="text-destructive">*</span></Label>
             <Input value={p.phone} onChange={e => setP(prev => ({ ...prev, phone: e.target.value }))} className="h-10" placeholder="08xx..." />
           </div>
 
