@@ -535,7 +535,7 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
                 </SelectContent>
               </Select>
               {taxType === 'custom' && (
-                <Input type="number" min={0} max={100} value={customTaxRate} onChange={e => setCustomTaxRate(Number(e.target.value))} placeholder="%" className="h-9 mt-1" />
+                <Input type="number" min={0} max={100} value={customTaxRate} onChange={e => setCustomTaxRate(Math.min(100, toNum(e.target.value, 100)))} placeholder="%" className="h-9 mt-1" />
               )}
             </div>
           </div>
