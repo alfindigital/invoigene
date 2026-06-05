@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { BusinessProfile } from '@/types/invoice';
+import { isValidIndonesianPhone, isValidEmail } from '@/lib/validators';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
