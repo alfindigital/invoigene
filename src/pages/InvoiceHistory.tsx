@@ -45,6 +45,10 @@ export default function InvoiceHistory({ onEdit, onPreview }: InvoiceHistoryProp
   });
 
   const handleWhatsApp = (inv: typeof invoices[0]) => {
+    if (!isValidIndonesianPhone(inv.buyerPhone || '')) {
+      toast({ title: 'Periksa input', description: 'No. HP tidak valid atau kosong', variant: 'destructive' });
+      return;
+    }
     const { grandTotal } = calcInvoiceTotals(inv);
     const msg = buildWhatsAppNotaMessage(inv, grandTotal, profile);
     openWhatsApp(inv.buyerPhone || '', msg);
