@@ -28,7 +28,21 @@ export default function Settings() {
   };
 
   const saveProfile = () => {
-    setProfile(p);
+    const phone = p.phone.trim();
+    const email = p.email.trim();
+    if (!phone) {
+      toast({ title: 'Periksa input', description: 'No. HP wajib diisi', variant: 'destructive' });
+      return;
+    }
+    if (!isValidIndonesianPhone(phone)) {
+      toast({ title: 'Periksa input', description: 'Format No. HP tidak valid (min 10 digit, diawali 08/62)', variant: 'destructive' });
+      return;
+    }
+    if (email && !isValidEmail(email)) {
+      toast({ title: 'Periksa input', description: 'Format email tidak valid', variant: 'destructive' });
+      return;
+    }
+    setProfile({ ...p, phone, email });
     toast({ title: '✅ Tersimpan', description: 'Profil usaha berhasil disimpan' });
   };
 
