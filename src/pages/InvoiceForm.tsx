@@ -476,7 +476,7 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
                         type="number"
                         min={0}
                         value={item.discountValue}
-                        onChange={(e) => updateItem(item.id, { discountValue: Number(e.target.value) })}
+                        onChange={(e) => updateItem(item.id, { discountValue: toNum(e.target.value) })}
                         className="h-9"
                       />
                     </div>
