@@ -111,90 +111,98 @@ export default function InvoicePreview({ invoice, profile, onBack }: InvoicePrev
         </Button>
       </div>
 
-      {/* Standard A4 preview */}
+      {/* Standard A4 preview — Bilingual ID / EN */}
       <div ref={printRef} className="bg-white text-black mx-auto max-w-[210mm] p-4 sm:p-6 shadow-lg print:shadow-none print:p-0" style={{ fontFamily: 'system-ui, sans-serif', fontSize: '12px', lineHeight: '1.5' }}>
         <div className="flex justify-between items-start gap-4 mb-4">
-          <div className="flex items-center gap-3">
-            {profile.logo && <img src={profile.logo} alt={`Logo ${profile.companyName || 'usaha'}`} className="h-12 w-12 object-contain" />}
-            <div>
-              <h1 className="text-base font-bold">{profile.companyName || 'Nama Usaha'}</h1>
-              {profile.address && <p className="text-gray-600 text-xs">{profile.address}</p>}
-              {profile.phone && <p className="text-gray-600 text-xs">{profile.phone}</p>}
+          <div className="flex items-center gap-3 min-w-0">
+            {profile.logo && <img src={profile.logo} alt={`Logo ${profile.companyName || 'usaha'}`} className="h-12 w-12 object-contain shrink-0" />}
+            <div className="min-w-0">
+              <h1 className="text-base font-bold break-words">{profile.companyName || 'Nama Usaha'}</h1>
+              {profile.address && <p className="text-gray-600 text-xs break-words">{profile.address}</p>}
+              {profile.phone && <p className="text-gray-600 text-xs break-words">{profile.phone}</p>}
             </div>
           </div>
-          <div className="text-right">
-            <h2 className="text-lg font-bold text-gray-800">NOTA</h2>
-            <p className="font-semibold text-sm">{invoice.invoiceNumber}</p>
+          <div className="text-right shrink-0">
+            <h2 className="text-lg font-bold text-gray-800 leading-tight">NOTA</h2>
+            <p className="text-[10px] text-gray-500 -mt-0.5 italic">Invoice</p>
+            <p className="font-semibold text-sm mt-1 break-all">{invoice.invoiceNumber}</p>
             <p className="text-xs text-gray-500">{formatDate(invoice.invoiceDate)}</p>
           </div>
         </div>
 
         {buyer !== 'Umum' && (
-          <div className="mb-4 text-sm">
-            <span className="text-gray-500">Pembeli:</span> <span className="font-medium">{buyer}</span>
+          <div className="mb-4 text-sm break-words">
+            <span className="text-gray-500">Pembeli / Buyer:</span> <span className="font-medium">{buyer}</span>
             {invoice.buyerPhone && <span className="text-gray-500 ml-2">({invoice.buyerPhone})</span>}
           </div>
         )}
 
-        <table className="w-full mb-4" style={{ borderCollapse: 'collapse' }}>
+        <table className="w-full mb-4" style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+          <colgroup>
+            <col style={{ width: '32px' }} />
+            <col />
+            <col style={{ width: '52px' }} />
+            <col style={{ width: '90px' }} />
+            <col style={{ width: '100px' }} />
+          </colgroup>
           <thead>
             <tr className="border-b-2 border-gray-800">
-              <th className="text-left py-1.5 text-xs font-semibold" style={{ width: '30px' }}>No</th>
-              <th className="text-left py-1.5 text-xs font-semibold">Item</th>
-              <th className="text-right py-1.5 text-xs font-semibold" style={{ width: '40px' }}>Qty</th>
-              <th className="text-right py-1.5 text-xs font-semibold" style={{ width: '90px' }}>Harga</th>
-              <th className="text-right py-1.5 text-xs font-semibold" style={{ width: '100px' }}>Jumlah</th>
+              <th className="text-left py-1.5 text-xs font-semibold align-bottom">No</th>
+              <th className="text-left py-1.5 text-xs font-semibold align-bottom">Item <span className="text-gray-400 font-normal">/ Description</span></th>
+              <th className="text-right py-1.5 text-xs font-semibold align-bottom">Qty</th>
+              <th className="text-right py-1.5 text-xs font-semibold align-bottom">Harga <span className="text-gray-400 font-normal">/ Price</span></th>
+              <th className="text-right py-1.5 text-xs font-semibold align-bottom">Jumlah <span className="text-gray-400 font-normal">/ Amount</span></th>
             </tr>
           </thead>
           <tbody>
             {invoice.lineItems.map((item, idx) => (
-              <tr key={item.id} className="border-b border-gray-200">
+              <tr key={item.id} className="border-b border-gray-200 align-top">
                 <td className="py-1.5 text-xs">{idx + 1}</td>
-                <td className="py-1.5 text-xs">{item.description}</td>
-                <td className="py-1.5 text-xs text-right">{item.quantity}</td>
-                <td className="py-1.5 text-xs text-right">{formatCurrency(item.unitPrice)}</td>
-                <td className="py-1.5 text-xs text-right font-medium">{formatCurrency(calcLineItemSubtotal(item))}</td>
+                <td className="py-1.5 text-xs break-words">{item.description}{item.unit ? <span className="text-gray-400"> ({item.unit})</span> : null}</td>
+                <td className="py-1.5 text-xs text-right tabular-nums">{item.quantity}</td>
+                <td className="py-1.5 text-xs text-right tabular-nums whitespace-nowrap">{formatCurrency(item.unitPrice)}</td>
+                <td className="py-1.5 text-xs text-right font-medium tabular-nums whitespace-nowrap">{formatCurrency(calcLineItemSubtotal(item))}</td>
               </tr>
             ))}
           </tbody>
         </table>
 
         <div className="flex justify-end mb-4">
-          <div className="w-56 space-y-0.5 text-xs">
-            <div className="flex justify-between"><span>Subtotal</span><span>{formatCurrency(totals.subtotal)}</span></div>
+          <div className="w-64 space-y-0.5 text-xs">
+            <div className="flex justify-between gap-2"><span>Subtotal</span><span className="tabular-nums whitespace-nowrap">{formatCurrency(totals.subtotal)}</span></div>
             {totals.additionalDiscount > 0 && (
-              <div className="flex justify-between"><span>Diskon</span><span>-{formatCurrency(totals.additionalDiscount)}</span></div>
+              <div className="flex justify-between gap-2"><span>Diskon <span className="text-gray-400">/ Discount</span></span><span className="tabular-nums whitespace-nowrap">-{formatCurrency(totals.additionalDiscount)}</span></div>
             )}
             {totals.taxRate > 0 && (
-              <div className="flex justify-between"><span>Pajak ({totals.taxRate}%)</span><span>{formatCurrency(totals.taxAmount)}</span></div>
+              <div className="flex justify-between gap-2"><span>Pajak <span className="text-gray-400">/ Tax</span> ({totals.taxRate}%)</span><span className="tabular-nums whitespace-nowrap">{formatCurrency(totals.taxAmount)}</span></div>
             )}
             {(invoice.shippingCost || 0) > 0 && (
-              <div className="flex justify-between"><span>Ongkir</span><span>{formatCurrency(invoice.shippingCost)}</span></div>
+              <div className="flex justify-between gap-2"><span>Ongkir <span className="text-gray-400">/ Shipping</span></span><span className="tabular-nums whitespace-nowrap">{formatCurrency(invoice.shippingCost)}</span></div>
             )}
-            <div className="flex justify-between border-t-2 border-gray-800 pt-1.5 text-sm font-bold">
+            <div className="flex justify-between gap-2 border-t-2 border-gray-800 pt-1.5 text-sm font-bold">
               <span>Total</span>
-              <span>{formatCurrency(totals.grandTotal)}</span>
+              <span className="tabular-nums whitespace-nowrap">{formatCurrency(totals.grandTotal)}</span>
             </div>
           </div>
         </div>
 
         {profile.bankName && (
           <div className="flex gap-4 items-start mb-4">
-            <div className="flex-1 text-xs">
-              <p className="font-semibold mb-0.5">Transfer ke:</p>
+            <div className="flex-1 text-xs min-w-0 break-words">
+              <p className="font-semibold mb-0.5">Transfer ke <span className="text-gray-400 font-normal">/ Bank Transfer:</span></p>
               <p>{profile.bankName} {profile.bankAccountNumber}</p>
-              <p>a/n {profile.bankAccountHolder}</p>
+              <p>a/n <span className="text-gray-400">/ Acc. Name:</span> {profile.bankAccountHolder}</p>
             </div>
             <QRCodeSVG value={qrData} size={64} />
           </div>
         )}
 
         {invoice.notes && (
-          <p className="text-xs text-gray-500 mb-2">{invoice.notes}</p>
+          <p className="text-xs text-gray-500 mb-2 break-words"><span className="font-semibold text-gray-600">Catatan / Notes:</span> {invoice.notes}</p>
         )}
 
         <div className="text-center text-[10px] text-gray-400 border-t pt-3 mt-6">
-          Terima kasih atas pembeliannya! 🙏
+          Terima kasih atas pembeliannya! / Thank you for your purchase! 🙏
         </div>
       </div>
 

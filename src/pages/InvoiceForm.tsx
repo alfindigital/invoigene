@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { z } from 'zod';
 import { useInvoiceStore } from '@/hooks/useInvoiceStore';
 import { Invoice, LineItem, InvoiceTemplate, calcLineItemSubtotal, calcInvoiceTotals, DiscountType } from '@/types/invoice';
 import { formatCurrency, generateInvoiceNumber, todayISO, addDays, buildWhatsAppNotaMessage, openWhatsApp } from '@/lib/formatters';
@@ -11,6 +12,39 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import InvoicePreview from '@/components/InvoicePreview';
+
+// Safely convert input strings to non-negative finite numbers (NaN/negatives → 0)
+const toNum = (v: string, max = 1_000_000_000): number => {
+  const n = Number(v);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return Math.min(n, max);
+};
+
+const lineItemSchema = z.object({
+  description: z.string().trim().min(1, 'Nama item wajib diisi').max(120, 'Nama item terlalu panjang'),
+  quantity: z.number().int('Jumlah harus bilangan bulat').positive('Jumlah harus > 0').max(100000, 'Jumlah terlalu besar'),
+  unitPrice: z.number().nonnegative('Harga tidak boleh negatif').max(1_000_000_000, 'Harga terlalu besar'),
+  discountValue: z.number().nonnegative('Potongan tidak boleh negatif'),
+  discountType: z.enum(['fixed', 'percentage']),
+}).refine(d => d.discountType !== 'percentage' || d.discountValue <= 100, {
+  message: 'Potongan persen maks 100%', path: ['discountValue'],
+}).refine(d => d.discountType !== 'fixed' || d.discountValue <= d.quantity * d.unitPrice, {
+  message: 'Potongan melebihi subtotal item', path: ['discountValue'],
+});
+
+const invoiceSchema = z.object({
+  buyerName: z.string().trim().max(100, 'Nama pembeli maks 100 karakter'),
+  buyerPhone: z.string().trim().max(20, 'No HP maks 20 karakter')
+    .refine(v => v === '' || /^[0-9+\-\s()]+$/.test(v), 'No HP hanya boleh angka & + - ( )'),
+  lineItems: z.array(lineItemSchema).min(1, 'Tambahkan minimal 1 item'),
+  additionalDiscountValue: z.number().nonnegative('Diskon tidak boleh negatif'),
+  additionalDiscountType: z.enum(['fixed', 'percentage']),
+  customTaxRate: z.number().min(0, 'Pajak tidak boleh negatif').max(100, 'Pajak maks 100%'),
+  shippingCost: z.number().nonnegative('Ongkir tidak boleh negatif').max(1_000_000_000),
+  notes: z.string().max(500, 'Catatan maks 500 karakter'),
+}).refine(d => d.additionalDiscountType !== 'percentage' || d.additionalDiscountValue <= 100, {
+  message: 'Diskon persen maks 100%', path: ['additionalDiscountValue'],
+});
 
 const UNIT_OPTIONS = ['pcs', 'box', 'pack', 'kg', 'gr', 'liter', 'meter', 'lusin'];
 
@@ -80,10 +114,15 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
   };
 
   const handleManualAdd = () => {
-    if (!manualDesc || !manualPrice) return;
+    const desc = manualDesc.trim();
+    const price = toNum(manualPrice);
+    if (!desc || price <= 0) {
+      toast({ title: 'Periksa input', description: 'Nama & harga (>0) wajib diisi', variant: 'destructive' });
+      return;
+    }
     const newId = crypto.randomUUID();
     lastAddedIdRef.current = newId;
-    setLineItems(prev => [...prev, { id: newId, description: manualDesc, quantity: 1, unit: 'pcs', unitPrice: Number(manualPrice), discountType: 'fixed', discountValue: 0 }]);
+    setLineItems(prev => [...prev, { id: newId, description: desc, quantity: 1, unit: 'pcs', unitPrice: price, discountType: 'fixed', discountValue: 0 }]);
     setManualDesc('');
     setManualPrice('');
   };
@@ -123,8 +162,15 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
   });
 
   const handleSave = (sendWA = false) => {
-    if (lineItems.length === 0) {
-      toast({ title: 'Oops', description: 'Tambahkan minimal 1 item', variant: 'destructive' });
+    const candidate = {
+      buyerName, buyerPhone, lineItems, notes,
+      additionalDiscountType, additionalDiscountValue,
+      customTaxRate, shippingCost,
+    };
+    const result = invoiceSchema.safeParse(candidate);
+    if (!result.success) {
+      const first = result.error.issues[0];
+      toast({ title: 'Periksa input', description: first?.message || 'Data belum valid', variant: 'destructive' });
       return;
     }
     const inv = buildInvoice();
@@ -430,7 +476,7 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
                         type="number"
                         min={0}
                         value={item.discountValue}
-                        onChange={(e) => updateItem(item.id, { discountValue: Number(e.target.value) })}
+                        onChange={(e) => updateItem(item.id, { discountValue: toNum(e.target.value) })}
                         className="h-9"
                       />
                     </div>
@@ -475,7 +521,7 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
                     <SelectItem value="percentage">%</SelectItem>
                   </SelectContent>
                 </Select>
-                <Input type="number" min={0} value={additionalDiscountValue} onChange={e => setAdditionalDiscountValue(Number(e.target.value))} className="h-9" />
+                <Input type="number" min={0} value={additionalDiscountValue} onChange={e => setAdditionalDiscountValue(toNum(e.target.value))} className="h-9" />
               </div>
             </div>
             <div className="space-y-1">
@@ -489,13 +535,13 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
                 </SelectContent>
               </Select>
               {taxType === 'custom' && (
-                <Input type="number" min={0} max={100} value={customTaxRate} onChange={e => setCustomTaxRate(Number(e.target.value))} placeholder="%" className="h-9 mt-1" />
+                <Input type="number" min={0} max={100} value={customTaxRate} onChange={e => setCustomTaxRate(Math.min(100, toNum(e.target.value, 100)))} placeholder="%" className="h-9 mt-1" />
               )}
             </div>
           </div>
           <div className="space-y-1">
             <Label className="text-xs">Ongkos Kirim</Label>
-            <Input type="number" min={0} value={shippingCost} onChange={e => setShippingCost(Number(e.target.value))} className="h-9" />
+            <Input type="number" min={0} value={shippingCost} onChange={e => setShippingCost(toNum(e.target.value))} className="h-9" />
           </div>
           <div className="space-y-1">
             <Label className="text-xs">Catatan</Label>
