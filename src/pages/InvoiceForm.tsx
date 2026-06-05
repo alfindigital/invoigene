@@ -35,8 +35,8 @@ const lineItemSchema = z.object({
 
 const invoiceSchema = z.object({
   buyerName: z.string().trim().max(100, 'Nama pembeli maks 100 karakter'),
-  buyerPhone: z.string().trim().max(20, 'No HP maks 20 karakter')
-    .refine(v => v === '' || /^[0-9+\-\s()]+$/.test(v), 'No HP hanya boleh angka & + - ( )'),
+  buyerPhone: z.string().trim().min(1, 'No. HP wajib diisi').max(20, 'No. HP maks 20 karakter')
+    .refine(v => isValidIndonesianPhone(v), 'Format No. HP tidak valid (min 10 digit, diawali 08/62)'),
   lineItems: z.array(lineItemSchema).min(1, 'Tambahkan minimal 1 item'),
   additionalDiscountValue: z.number().nonnegative('Diskon tidak boleh negatif'),
   additionalDiscountType: z.enum(['fixed', 'percentage']),
