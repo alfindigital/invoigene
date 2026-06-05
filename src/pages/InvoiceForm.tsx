@@ -157,8 +157,15 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
   });
 
   const handleSave = (sendWA = false) => {
-    if (lineItems.length === 0) {
-      toast({ title: 'Oops', description: 'Tambahkan minimal 1 item', variant: 'destructive' });
+    const candidate = {
+      buyerName, buyerPhone, lineItems, notes,
+      additionalDiscountType, additionalDiscountValue,
+      customTaxRate, shippingCost,
+    };
+    const result = invoiceSchema.safeParse(candidate);
+    if (!result.success) {
+      const first = result.error.issues[0];
+      toast({ title: 'Periksa input', description: first?.message || 'Data belum valid', variant: 'destructive' });
       return;
     }
     const inv = buildInvoice();
