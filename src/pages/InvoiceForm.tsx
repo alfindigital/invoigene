@@ -521,7 +521,7 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
                     <SelectItem value="percentage">%</SelectItem>
                   </SelectContent>
                 </Select>
-                <Input type="number" min={0} value={additionalDiscountValue} onChange={e => setAdditionalDiscountValue(Number(e.target.value))} className="h-9" />
+                <Input type="number" min={0} value={additionalDiscountValue} onChange={e => setAdditionalDiscountValue(toNum(e.target.value))} className="h-9" />
               </div>
             </div>
             <div className="space-y-1">
