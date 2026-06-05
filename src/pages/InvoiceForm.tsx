@@ -114,10 +114,15 @@ export default function InvoiceForm({ editId, onNavigate }: InvoiceFormProps) {
   };
 
   const handleManualAdd = () => {
-    if (!manualDesc || !manualPrice) return;
+    const desc = manualDesc.trim();
+    const price = toNum(manualPrice);
+    if (!desc || price <= 0) {
+      toast({ title: 'Periksa input', description: 'Nama & harga (>0) wajib diisi', variant: 'destructive' });
+      return;
+    }
     const newId = crypto.randomUUID();
     lastAddedIdRef.current = newId;
-    setLineItems(prev => [...prev, { id: newId, description: manualDesc, quantity: 1, unit: 'pcs', unitPrice: Number(manualPrice), discountType: 'fixed', discountValue: 0 }]);
+    setLineItems(prev => [...prev, { id: newId, description: desc, quantity: 1, unit: 'pcs', unitPrice: price, discountType: 'fixed', discountValue: 0 }]);
     setManualDesc('');
     setManualPrice('');
   };
