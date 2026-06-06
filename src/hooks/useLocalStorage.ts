@@ -13,7 +13,12 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T 
   const setValue = useCallback((value: T | ((prev: T) => T)) => {
     setStoredValue(prev => {
       const next = value instanceof Function ? value(prev) : value;
-      window.localStorage.setItem(key, JSON.stringify(next));
+      try {
+        window.localStorage.setItem(key, JSON.stringify(next));
+      } catch (err) {
+        // QuotaExceededError or private mode — keep state in memory only
+        console.warn('Failed to persist to localStorage:', err);
+      }
       return next;
     });
   }, [key]);
